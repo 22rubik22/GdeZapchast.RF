@@ -5,34 +5,58 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\BaseAvto;
 use App\Models\Advert;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CarListsController extends Controller
 {
-    // Получаем уникальные модели для данной марки
-    public function getModels(Request $request)
+    /**
+     * Возвращает список моделей по бренду с количеством активных объявлений,
+     * опционально отфильтрованных по user_id.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int|null                  $id      — необязательный user_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getModels(Request $request, ?int $id = null)
     {
-        $brand = $request->input('brand');
-    
-        if (!$brand) {
-            return response()->json([], 400); // Возвращаем ошибку, если марка не передана
+        // 1) Валидация входных данных
+        $data = $request->validate([
+            'brand' => 'required|string',
+        ]);
+        $brand = $data['brand'];
+
+        // 2) Получаем все уникальные модели из base_avto
+        $models = BaseAvto::where('brand', $brand)
+            ->whereNotNull('model')
+            ->distinct()
+            ->pluck('model');
+
+        // 3) Готовим запрос для подсчёта объявлений
+        $advertsQuery = Advert::query()
+            ->where('brand', $brand)
+            ->where('status_ad', 'activ');
+
+        if ($id !== null) {
+            $advertsQuery->where('user_id', $id);
         }
-    
-        // Получаем все уникальные модели для выбранной марки из таблицы base_avto
-        $models = BaseAvto::where('brand', $brand)->distinct()->pluck('model');
-    
-        // Для каждой модели считаем количество объявлений в таблице adverts
-        $modelsWithCount = $models->map(function ($model) use ($brand) {
-            $advertCount = Advert::where('brand', $brand)
-                                 ->where('model', $model)
-                                 ->where('status_ad', 'activ')
-                                 ->count();
+
+        // 4) Группировка и подсчёт
+        // Получим коллекцию вида ['Focus' => 3, 'Mondeo' => 5, …]
+        $counts = $advertsQuery
+            ->groupBy('model')
+            ->select('model', DB::raw('COUNT(*) as total'))
+            ->pluck('total', 'model');
+
+        // 5) Формируем итоговый массив моделей с count (0, если нет объявлений)
+        $result = $models->map(function (string $model) use ($counts) {
             return [
-                'model' => $model,
-                'advert_count' => $advertCount
+                'model'        => $model,
+                'advert_count' => (int) ($counts[$model] ?? 0),
             ];
         });
-    
-        return response()->json($modelsWithCount);
+
+        return response()->json($result);
     }
 
  public function getModelsCreate(Request $request)
@@ -42,7 +66,7 @@ class CarListsController extends Controller
 
         return response()->json($models);
     }
-    
+
 
 // Получаем уникальные годы для данной модели
 public function getYears(Request $request)
@@ -126,22 +150,27 @@ public function getYears(Request $request)
     }
 
     // Получаем уникальные марки
-    public function getBrands()
-{
-    // Получаем все уникальные марки из таблицы base_avto
-    $brands = BaseAvto::distinct()->pluck('brand');
+    public function getBrands(?int $id = null)
+    {
+        $cacheKey = 'brands_with_count';
+        $cacheKey .= $id ? '_'.$id : '';
+        return Cache::remember($cacheKey, 10*60, function () use ($id) {
+            return BaseAvto::select([
+                'base_avto.brand',
+                // только уникальные adverts.id
+                DB::raw('COUNT(DISTINCT adverts.id) AS advert_count'),
+            ])
+                ->leftJoin('adverts', function ($join) use ($id) {
+                    $join->on('base_avto.brand', '=', 'adverts.brand')
+                        ->where('adverts.status_ad', 'activ');
 
-    // Для каждой марки считаем количество объявлений в таблице adverts
-    $brandsWithCount = $brands->map(function ($brand) {
-        $advertCount = Advert::where('brand', $brand)
-                             ->where('status_ad', 'activ')
-                             ->count();
-        return [
-            'brand' => $brand,
-            'advert_count' => $advertCount
-        ];
-    });
-
-    return response()->json($brandsWithCount);
-}
+                    if ($id !== null) {
+                        $join->where('adverts.user_id', $id);
+                    }
+                })
+                ->groupBy('base_avto.brand')
+                ->orderByDesc('advert_count')
+                ->get();
+        });
+    }
 }

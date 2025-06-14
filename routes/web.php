@@ -24,7 +24,8 @@ use App\Http\Controllers\TariffController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\AdvertTableController;
 use App\Http\Controllers\WalletController;
- use Spatie\Sitemap\SitemapGenerator;
+use App\Http\Controllers\SellerControler;
+use Spatie\Sitemap\SitemapGenerator;
 
 
 Route::get('/users/{userId}/branches', [UserController::class, 'getBranches'])->name('user.branches');
@@ -119,7 +120,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile/{id}/edit', [UserController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/{id}', [UserController::class, 'update'])->name('profile.update');
-    
+    Route::post('/profile/{id}/updateDelivery', [UserController::class, 'updateDelivery'])->name('profile.update_delivery');
+    Route::post('/profile/{id}/updateShopAbout', [UserController::class, 'updateShopAbout'])->name('profile.update_shop_about');
 });
 Route::put('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
 
@@ -132,16 +134,21 @@ Route::get('/search/loading', [AdvertsController::class, 'showLoading'])->name('
 
 // Ресурсный маршрут для страницы товара
    Route::get('/adverts/{id}/{product_name_slug?}/{brand?}/{model?}/{year?}/{engine?}/{number?}', [AdvertsController::class, 'show'])->name('adverts.show');
-  
+
 // Ресурсный маршрут для страницы результатов поиска товара
-Route::get('/search', [AdvertsController::class, 'search'])->name('adverts.search');
+Route::match(['get', 'post'], '/search', [AdvertsController::class, 'search'])->name('adverts.search');
 
 
-
+// Страница продавца
+Route::middleware('check.seller')->group(function () {
+    Route::get('/shop/{id}/{username}', [SellerControler::class, 'index'])->name('seller.index');
+    Route::match(['get', 'post'], '/shop/{id}/{username}/search', [AdvertsController::class, 'search'])->name('seller.search');
+    Route::get('/shop/{id}/{username}/adverts/filter-by-engine', [AdvertsController::class, 'filterByEngine'])->name('seller.filterByEngine');
+});
 
 // Форма поиска
-// Ресурсный маршрут для динамических списков формы 
-Route::get('/get-models', [CarListsController::class, 'getModels'])->name('get.models');
+// Ресурсный маршрут для динамических списков формы
+Route::get('/get-models/{id?}', [CarListsController::class, 'getModels'])->name('get.models');
 Route::get('/get-modelsCreate', [CarListsController::class, 'getModelsCreate'])->name('get.modelsCreate');
 //год
 Route::get('/get-years', [CarListsController::class, 'getYears']);
@@ -166,7 +173,7 @@ Route::get('/cookie-policy', function () {
 
 //Подсказки по маркам
 
-Route::get('/get-brands', [CarListsController::class, 'getBrands'])->name('get.brands');
+Route::get('/get-brands/{id?}', [CarListsController::class, 'getBrands'])->name('get.brands');
 
 
 
@@ -192,11 +199,11 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('message', 'Ссылка для подтверждения отправлена!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-Route::put('/adverts/update', [AdvertController::class, 'update'])->name('adverts.update');
+Route::put('/adverts/update', [AdvertsController::class, 'update'])->name('adverts.update');
 
 
-Route::get('/search/by-part-number', [AdvertController::class, 'searchByPartNumber'])->name('search.by.part.number');
-Route::get('/search/by-part-name', [AdvertController::class, 'searchByPartName'])->name('search.by.part.name');
+Route::get('/search/by-part-number', [AdvertsController::class, 'searchByPartNumber'])->name('search.by.part.number');
+Route::get('/search/by-part-name', [AdvertsController::class, 'searchByPartName'])->name('search.by.part.name');
 
 Route::get('/market-analysis', function () {
     return view('market');
@@ -244,43 +251,43 @@ Route::post('/reset-converter-set', [ConverterSetController::class, 'reset'])->n
         $parts = \App\Models\Part::where('part_name', 'like', '%' . $term . '%')->pluck('part_name');
         return response()->json($parts);
     })->name('get.parts');
-    
+
     Route::get('/get-years', [CarListsController::class, 'getYears'])->name('get.years');
-    
+
     Route::post('/adverts/delete-multiple', [AdvertsController::class, 'destroyMultiple'])->name('adverts.destroyMultiple');
-    
-    
-    
+
+
+
         Route::post('/favorites/add/{advertId}', [FavoriteController::class, 'addToFavorites'])->name('favorites.add');
         Route::post('/favorites/remove/{advertId}', [FavoriteController::class, 'removeFromFavorites'])->name('favorites.remove');
 
 
      Route::get('/messages/unread-count', [ChatController::class, 'getUnreadCount'])->middleware('auth');
   Route::get('/messages/{chatId}', [ChatController::class, 'getMessagesByChatId'])->name('messages.byChatId');
-  
+
    Route::get('/advert/{advert}/table-data', [AdvertTableController::class, 'getTableData'])->name('advert.table-data');
   Route::get('/advert/{advertId}/brands-and-models', [AdvertTableController::class, 'getBrandsAndModels']);
-  
+
     Route::get('/wallet/history', [WalletController::class, 'getHistory']);
     Route::get('/pay-form', [WalletController::class, 'showPayForm'])->name('pay.form');
-    
+
     Route::post('/save-column-mappings', [ConverterSetController::class, 'saveColumnMappings']);
         Route::post('/check-column-mappings', [ConverterSetController::class, 'checkColumnMappings'])->name('check.column.mappings');
                 Route::post('/get-column-mappings', [ConverterSetController::class, 'getColumnMappings'])->name('get.column.mappings');
          Route::delete('/column-mappings/delete', [ConverterSetController::class, 'deleteColumnMappings'])->name('column_mappings.delete');
-         
-        
+
+
 
 Route::get('/sitemap', function () {
     SitemapGenerator::create(config('app.url'))->writeToFile(public_path('sitemap.xml'));
     return response()->file(public_path('sitemap.xml'));
 });
-                
 
 
 
 
- 
+
+
 
 
 

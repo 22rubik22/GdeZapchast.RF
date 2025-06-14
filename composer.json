@@ -8,6 +8,7 @@
         "php": "^8.2",
         "babenkoivan/elastic-scout-driver": "^4.0",
         "box/spout": "^3.3",
+        "doctrine/dbal": "^4.2",
         "elasticsearch/elasticsearch": "^8.17",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",

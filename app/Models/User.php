@@ -95,7 +95,7 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @var string
      */
-    protected $table = 'users'; // Имя таблицы 
+    protected $table = 'users'; // Имя таблицы
 
     /**
      * Получить чаты, отправленные пользователем.
@@ -122,48 +122,57 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function userPhoneNumber()
-{
-    return $this->hasOne(UserPhoneNumber::class);
-}
+    {
+        return $this->hasOne(UserPhoneNumber::class);
+    }
 
-public function chatsAsUser1()
-{
-    return $this->hasMany(Chat::class, 'user1_id');
-}
+    public function chatsAsUser1()
+    {
+        return $this->hasMany(Chat::class, 'user1_id');
+    }
 
-public function chatsAsUser2()
-{
-    return $this->hasMany(Chat::class, 'user2_id');
-}
+    public function chatsAsUser2()
+    {
+        return $this->hasMany(Chat::class, 'user2_id');
+    }
 
-public function messages()
-{
-    return $this->hasMany(Message::class);
-}
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
 
-public function converterSets()
-{
-    return $this->hasMany(ConverterSet::class);
-}
-public function tariffs()
-{
-    return $this->hasMany(Tariff::class, 'id_user'); // Указываем внешний ключ 'id_user'
-}
+    public function converterSets()
+    {
+        return $this->hasMany(ConverterSet::class);
+    }
+    public function tariffs()
+    {
+        return $this->hasMany(Tariff::class, 'id_user'); // Указываем внешний ключ 'id_user'
+    }
 
-public function favorites()
-{
-    return $this->hasMany(Favorite::class);
-}
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 
 
-public function legalInfo()
-{
-    return $this->hasOne(UserLegalInfo::class);
-}
+    public function legalInfo()
+    {
+        return $this->hasOne(UserLegalInfo::class);
+    }
 
- public function branches()
-        {
-            return $this->hasMany(Branch::class);
-        }
+    public function branches()
+    {
+        return $this->hasMany(Branch::class);
+    }
 
+    public function sellerInfo()
+    {
+        return $this->hasOne(SellerInfo::class, 'user_id', 'id');
+    }
+
+    public function deliveryService()
+    {
+        return $this->hasOne(DeliveryService::class, 'user_id', 'id');
+    }
 }

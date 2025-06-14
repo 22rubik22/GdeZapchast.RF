@@ -34,9 +34,9 @@
 }
 </style>
 <body class=" bg-gray-100">
-    @include('components.header-seller')    
+    @include('components.header-seller')
 
-    <div class="header text-center mt-28"> 
+    <div class="header text-center mt-28">
         <a href="{{ route('register') }}" class="text-blue-500 hover:underline">Нет аккаунта? Зарегистрируйся</a>
     </div>
 
@@ -52,12 +52,12 @@
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
             <input type="email" name="email" placeholder="Email" required class="w-full p-3 border rounded-md">
-            
+
             <!-- Поле для пароля с иконкой для скрытия/показа -->
             <div class="relative">
                 <input type="password" name="password" id="passwordInput" placeholder="Пароль" required class="w-full p-3 border rounded-md pr-10">
                 <span class="toggle-password absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer" onclick="togglePasswordVisibility()">
-                    <img src="images/close_password.png" alt="Показать/Скрыть пароль" class="w-5 h-5">
+                    <img src="../../../public/images/close_password.png" alt="Показать/Скрыть пароль" class="w-5 h-5">
                 </span>
             </div>
 
@@ -68,7 +68,7 @@
             <button type="submit" class="w-full p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600">Войти</button>
         </form>
     </div>
-   @include('components.footer')   
+   @include('components.footer')
 
     <!-- Добавляем отступ снизу для мобильных устройств -->
     <div class="mt-20"></div>

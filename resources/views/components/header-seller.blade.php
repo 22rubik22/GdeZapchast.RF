@@ -118,7 +118,7 @@ select#city-mobile:hover {
         color: #1376E7; /* Цвет текста */
 
     }
-    
+
     .unread-count {
     display: none; /* Скрываем по умолчанию */
     margin-left: 5px;
@@ -139,8 +139,8 @@ select#city-mobile:hover {
     background-color: red;
     border-radius: 50%;
     transform: translate(50%, -50%); /* Смещаем точку в верхний правый угол */
-    
-   
+
+
 }
  #izb, #mes{
     background-color: transparent !important;
@@ -181,7 +181,7 @@ select#city-mobile:hover {
 <script>
     const baseUrl = '{{ url()->current() }}'; // Передаем текущий URL в JavaScript
 
-   
+
 
 
 
@@ -199,7 +199,7 @@ select#city-mobile:hover {
         //    overlay.classList.add('hidden');
       //  });
 
-       
+
 
 </script>
 
@@ -221,11 +221,11 @@ select#city-mobile:hover {
             <!-- Здесь будут добавлены города через JavaScript -->
         </select>
     </div>
-    
+
 
     <!-- Кнопка меню только для мобильных устройств -->
     <div class="menu-button-container md:hidden flex items-center justify-end h-0">
-       
+
     </div>
 
     <!-- Навигация для больших экранов -->
@@ -310,7 +310,7 @@ select#city-mobile:hover {
     </div>
 
 
-      
+
         @endif
     </div>
 </div>
@@ -324,7 +324,7 @@ select#city-mobile:hover {
         $currentUrl = url()->current(); // Получаем текущий URL
     @endphp
 
-    <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('home', null, request()->get('city')) }}" 
+    <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('home', null, request()->get('city')) }}"
        class="text-black no-underline text-sm flex flex-col items-center flex-shrink-0 {{ $currentUrl === \App\Helpers\UrlHelper::generateUrlWithCity('home', null, request()->get('city')) ? 'text-blue-500' : '' }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -333,7 +333,7 @@ select#city-mobile:hover {
     </a>
 
     @if(auth()->check())
-        <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('adverts.favorites', null, request()->get('city')) }}" 
+        <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('adverts.favorites', null, request()->get('city')) }}"
            class="text-black no-underline text-sm flex flex-col items-center flex-shrink-0 {{ $currentUrl === \App\Helpers\UrlHelper::generateUrlWithCity('adverts.favorites', null, request()->get('city')) ? 'text-blue-500' : '' }}">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
@@ -341,7 +341,7 @@ select#city-mobile:hover {
             Избранное
         </a>
 
-        <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('chats.index', null, request()->get('city')) }}" 
+        <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('chats.index', null, request()->get('city')) }}"
            class="text-black no-underline text-sm flex flex-col items-center flex-shrink-0 {{ $currentUrl === \App\Helpers\UrlHelper::generateUrlWithCity('chats.index', null, request()->get('city')) ? 'text-blue-500' : '' }}">
             <div class="relative">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -352,7 +352,7 @@ select#city-mobile:hover {
             Сообщения
         </a>
 
-          <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('user.show', auth()->user()->id, request()->get('city')) }}" 
+          <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('user.show', auth()->user()->id, request()->get('city')) }}"
            class="text-black no-underline text-sm flex flex-col items-center flex-shrink-0 {{ Str::startsWith($currentUrl, \App\Helpers\UrlHelper::generateUrlWithCity('user.show', auth()->user()->id, request()->get('city'))) ? 'text-blue-500' : '' }}">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -360,7 +360,7 @@ select#city-mobile:hover {
             Профиль
         </a>
     @else
-        <a href="{{ route('login') }}" 
+        <a href="{{ route('login') }}"
            class="text-black no-underline text-sm flex flex-col items-center flex-shrink-0 {{ $currentUrl === route('login') ? 'text-blue-500' : '' }}">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -378,30 +378,38 @@ select#city-mobile:hover {
         let isHovered = false; // Переменная для отслеживания состояния наведения
 
         // Обработчик наведения на аватарку
-        avatarLink.addEventListener('mouseenter', function() {
-            isHovered = true;
-            avatarPopup.classList.remove('hidden');
-        });
+        if (avatarLink) {
+            avatarLink.addEventListener('mouseenter', function() {
+                isHovered = true;
+                avatarPopup.classList.remove('hidden');
+            });
+        }
 
         // Обработчик ухода курсора с аватарки
-        avatarLink.addEventListener('mouseleave', function() {
-            setTimeout(() => {
-                if (!isHovered) {
-                    avatarPopup.classList.add('hidden');
-                }
-            }, 100); // Задержка, чтобы дать время на переход на выпадающее окно
-        });
+        if (avatarLink) {
+            avatarLink.addEventListener('mouseleave', function() {
+                setTimeout(() => {
+                    if (!isHovered) {
+                        avatarPopup.classList.add('hidden');
+                    }
+                }, 100); // Задержка, чтобы дать время на переход на выпадающее окно
+            });
+        }
 
         // Обработчик наведения на выпадающее окно
-        avatarPopup.addEventListener('mouseenter', function() {
-            isHovered = true;
-        });
+        if (avatarPopup) {
+            avatarPopup.addEventListener('mouseenter', function() {
+                isHovered = true;
+            });
+        }
 
         // Обработчик ухода курсора с выпадающего окна
-        avatarPopup.addEventListener('mouseleave', function() {
-            isHovered = false;
-            avatarPopup.classList.add('hidden');
-        });
+        if (avatarPopup) {
+            avatarPopup.addEventListener('mouseleave', function() {
+                isHovered = false;
+                avatarPopup.classList.add('hidden');
+            });
+        }
     });
 </script>
 <script>
@@ -471,10 +479,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Проверяем, содержит ли URL /chat/ или /chats (включая URL с параметрами)
     if (currentUrl.includes("/chat/") || currentUrl.includes("/chats")) {
-        
+
         // Находим блок с классом mobile-city-selector
         const citySelector = document.querySelector('.mobile-city-selectormini');
-        
+
         // Если блок найден, скрываем его
         if (citySelector) {
             citySelector.style.display = 'none';

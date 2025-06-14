@@ -48,23 +48,6 @@
     overflow-y: auto; /* Добавляем прокрутку, если контент не помещается */
 }
 
-/* Стили для кнопки */
-#openModificationsModalBtn {
-    display: none; /* Скрыта по умолчанию */
-}
-
-@media (max-width: 768px) {
-    #openModificationsModalBtn {
-        display: block; /* Показываем кнопку только на мобильных устройствах */
-    }
-}
-
-#modifications {
-    display: flex;
-    flex-direction: column; /* Текст будет выводиться в один элемент в строку */
-    overflow-y: auto; 
-    height: 10rem;/* Вертикальная прокрутка, если текст не помещается */
-}
 
 .blockadvert {
     box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.15); /* Adjust values as needed */
@@ -75,7 +58,7 @@
 #search-filters-container {
     display: flex;
     flex-direction: column;
-    padding-right: 1rem;    
+    padding-right: 1rem;
     padding-left: 1rem;
     border-radius: 0.5rem;
     margin-top: 1rem;
@@ -90,21 +73,7 @@
     margin-bottom: 0.5rem;
 }
 
-/* Стили для модального окна */
-#modificationsModal {
-    display: none; /* Скрыто по умолчанию */
-}
 
-#modificationsModalContent {
-    max-height: 80vh; /* Ограничиваем высоту контента */
-    overflow-y: auto; /* Добавляем прокрутку, если контент не помещается */
-}
-
-/* Стили для кнопки закрытия модального окна */
-#closeModificationsModalBtn {
-    font-size: 1.5rem;
-    cursor: pointer;
-}
 
 @media (max-width: 768px) {
     #search-filters-container {
@@ -113,9 +82,8 @@
         border: 1px solid #5e94f7;
         margin-top:0;
     }
-    
+
       #modifications-container {
-        height: 250px !important; /* Высота 200px для мобильных устройств */
         overflow-y: auto; /* Добавляем вертикальную прокрутку, если контент не помещается */
          border-radius: 15px;
 
@@ -169,27 +137,32 @@ body {
 </style>
 <body class=" flex flex-col items-center">
 
-@include('components.header-seller')   
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script> 
+@include('components.header-seller')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
 
 <!-- Рекламный баннер -->
 <div class="w-full md:w-[90%] mx-auto mt-10 hidden md:block">
     <img src="{{ asset('images/banner.png') }}" alt="Реклама" class="banner w-full rounded-2xl hidden md:block">
 </div>
 
-<div class="w-full md:w-[90%] flex flex-col items-start">
-    <div class="w-full md:w-[80%]">
-        
-        @include('components.search-form')  
-    </div>
+<div class="w-full mt-20 md:w-[90%] mt-10 mx-auto sm:block">
+    @include('components.search-form')
 </div>
 
 <div id="search-filters-wrapper"  class="w-full md:w-[90%] flex flex-col items-start">
     <div id="search-filters-container" class="hidden w-full md:w-[75%]"></div>
 </div>
 
-<div class="w-full md:w-[90%]">
-    <div class="flex flex-col w-full sm:flex-row sm:justify-start sm:w-full mt-8">
+<div class="w-full md:w-[90%] max-w-6xl max-md:mb-20">
+    <div class="
+        flex
+        flex-col-reverse
+        xl:flex-row
+        w-full
+        sm:justify-start
+        md:mt-8
+        gap-20
+    ">
     @if($adverts->isEmpty())
         <p class="text-center text-lg mt-8">Нет доступных товаров.</p>
     @else
@@ -203,251 +176,106 @@ body {
         <!-- Для телефонов -->
         <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 px-2 sm:hidden">
             @foreach($filteredAdverts as $advert)
-<div class="bg-white rounded-lg"
-     onclick="location.href=generateAdvertUrl({
-         id: '{{ $advert->id }}',
-         product_name: '{{ $advert->product_name }}',
-         brand: '{{ $advert->brand }}',
-         model: '{{ $advert->model }}',
-         year: '{{ $advert->year }}',
-         engine: '{{$advert->engine}}',
-         number: '{{$advert->number}}'
-     })">
-    <div class="relative">
-        @if ($advert->main_photo_url)
-            <img src="{{ $advert->main_photo_url }}" alt="{{ $advert->product_name }} - Главное фото" class="w-full h-48 object-cover rounded-lg">
-        @else
-            <img src="{{ asset('images/dontfoto.jpg') }}" alt="Фото отсутствует" class="w-full h-48 object-cover rounded-lg">
-        @endif
-        <span class="absolute top-2 right-2 bg-[#FFE6C1] text-black text-xs font-normal px-2 py-1 rounded">
-             {{ $advert->user->userAddress->city ?? 'Не указан' }}
-        </span>
-    </div>
-    <div class="px-2 py-1 flex flex-col" style="min-height: 100px;"> <!-- Фиксированная минимальная высота -->
-        <div class="text-lg font-bold overflow-hidden whitespace-nowrap relative">
-            {{ $advert->product_name }}
-            <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent"></div>
-        </div>
-        <div class="text-xl text-black font-semibold">
-            {{ $advert->price }} ₽
-        </div>
-        <div class="flex flex-wrap items-center text-gray-500 text-sm mt-2" style='min-height: 20px;'>
-            @if($advert->brand)
-                <i class="fas fa-car mr-2"></i>
-                <span>{{ $advert->brand }}</span>
-                <span class="mx-1">|</span>
-            @endif
-            
-            @if($advert->model)
-                <span>{{ $advert->model }}</span>
-                <span class="mx-1">|</span>
-            @endif
-            
-            @if($advert->year)
-                <span>{{ $advert->year }}</span>
-            @endif
-        </div>
-        
-        <div style='min-height: 20px;'>
-            @if($advert->number)
-            <p class="text-sm text-gray-600">
-                <i class="fas fa-barcode"></i>
-                <span>{{ $advert->number }}</span>
-            </p>
-        @endif     
-        </div>
-          <!-- Блок со временем, который всегда будет внизу -->
-            <div class="text-gray-500 text-sm mt-auto" style="display: block !important;">
-                @if($advert->created_at)
-                    @if($advert->created_at->isToday())
-                        сегодня в {{ $advert->created_at->format('H:i') }}
-                    @elseif($advert->created_at->isYesterday())
-                        вчера в {{ $advert->created_at->format('H:i') }}
-                    @else
-                        {{ $advert->created_at->format('d.m.Y в H:i') }}
-                    @endif
-                @else
-                    дата не указана
-                @endif
-            </div>
-    </div>
-</div>
+                @include('components.advert-card-phone', ['advert' => $advert])
             @endforeach
         </div>
 
       <!-- Для больших и средних экранов -->
-<div class="hidden sm:flex w-[90%] flex-col items-start justify-center mr-20 parent-container">
-    @foreach($filteredAdverts as $advert)
-    <div class="blockadvert bg-white rounded-2xl flex max-w-5xl w-full mt-8 cursor-pointer transition-colors duration-300 hover:bg-[#f0f8ff] relative border border-[#b8b8b8]"
-         onclick="location.href=generateAdvertUrl({
-             id: '{{ $advert->id }}',
-             product_name: '{{ $advert->product_name }}',
-             brand: '{{ $advert->brand }}',
-             model: '{{ $advert->model }}',
-             year: '{{ $advert->year }}',
-             engine: '{{$advert->engine}}',
-              number: '{{$advert->number}}'
-             
-         })" tabindex="0" role="button">
-        <!-- Кружок с надписью -->
-        <!--<div class="absolute -right-9 top-2/3 transform -translate-y-1/2 w-20 h-20 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold shadow-lg">
-            <span class="flex items-center justify-center text-center">Скидка до -20%</span>
-        </div>-->
-    
-        <!-- Вывод главного фото -->
-        <div class="w-1/4 flex-shrink-0">
-            <div class="w-[220px] h-[175px] bg-gray-200 rounded-l-2xl border border-r-[#b8b8b8] overflow-hidden">
-                @if ($advert->main_photo_url)
-                    <img src="{{ $advert->main_photo_url }}" alt="{{ $advert->product_name }} - Главное фото" class="w-full h-full object-cover">
-                @else
-                    <img src="{{ asset('images/dontfoto.jpg') }}" alt="Фото отсутствует" class="w-full h-full object-cover">
-                @endif
-            </div>
+        <div class="hidden sm:flex w-[90%] flex-col items-start justify-center parent-container mx-auto">
+            @foreach($filteredAdverts as $advert)
+                @include('components.advert-card-desktop', ['advert' => $advert])
+            @endforeach
         </div>
-    
-        <div class="flex flex-col justify-between w-3/4 lg:ml-10 sm:ml-20">
-            <div class="flex justify-between items-start">
-                <div class="pt-4">
-                    <div class="relative max-w-[300px]"> <!-- Укажите нужную ширину -->
-                        <h2 class="text-xl font-semibold product-name overflow-hidden whitespace-nowrap pr-8" data-original-name="{{ $advert->product_name }}">
-                            {{ $advert->product_name }}
-                        </h2>
-                        <div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+
+        <div
+            id="filters-container"
+            class="
+                max-md:bg-[#5e94f7]
+                p-4
+                filters
+                bg-[#f3f3f3]
+                w-full
+                xl:w-1/3
+                h-auto
+                max-h-[32rem]
+                md:rounded-2xl
+                shadow-md
+            "
+        >
+
+
+            <div id="modifications-container" class="modification p-4 h-auto xl:h-1/2 bg-[#f3f3f3] flex flex-col rounded-2xl">
+                <div class="flex-grow">
+                    <label class="font-medium">Модификации:</label>
+                    <div id="modifications-buttons" class="flex space-x-2 mb-4 hidden">
+                        <button id="select-all-mods" class="text-blue-500 hover:text-blue-700">Отметить все</button>
+                        <button id="deselect-all-mods" class="text-blue-500 hover:text-blue-700">Убрать все</button>
                     </div>
-                    @if($advert->number)
-                    <p class="beg bg-gray-200 mt-4 px-3 py-1 w-24 text-sm rounded-xl text-center">{{ $advert->number }}</p>
-                    @endif
+                    <div id="modifications" class="flex flex-col overflow-y-auto show_scroll" style="display: none;"></div>
+                    <div id="modifications-placeholder" class="text-gray-500 mt-2 hidden">
+                        Для отображения модификаций выберите параметры автомобиля
+                    </div>
                 </div>
-                <div class="text-right pr-4 pt-4">
-                    <p class="text-xl font-semibold">{{ $advert->price }} ₽</p>
-                    <p class="text-red-500">{{ $advert->user->userAddress->city ?? 'Не указан' }}</p>
+
+                <div class="mt-4">
+                    <button id="openModificationsModalBtn" class="w-100 l:w-[75%] xl:w-100 bg-[#E9E9E9] text-black px-4 py-2 rounded-lg hidden">
+                        Показать все модификации
+                    </button>
                 </div>
             </div>
-            <div class="flex space-x-3 pb-4 w-full justify-start">
-                @if($advert->brand)
-                <span class="bg-[#FFE6C1] text-black text-sm font-medium px-2.5 py-0.5 rounded-xl">{{ $advert->brand }}</span>
-                @endif
-                
-                @if($advert->model)
-                <span class="bg-[#FFE6C1] text-black text-sm font-medium px-2.5 py-0.5 rounded-xl">{{ $advert->model }}</span>
-                @endif
-                
-                @if($advert->body)
-                <span class="bg-[#FFE6C1] text-black text-sm font-medium px-2.5 py-0.5 rounded-xl">{{ $advert->body }}</span>
-                @endif
-                
-                @if($advert->engine)
-                <span class="bg-[#FFE6C1] text-black text-sm font-medium px-2.5 py-0.5 rounded-xl">{{ $advert->engine }}</span>
-                @endif
+
+
+            <div id="modificationsModal" class="fixed inset-0 bg-black/50 hidden z-50">
+                <div id="modificationsModalContent"
+                     class="bg-white max-w-[80%] mx-auto mt-20 p-4 rounded-lg relative overflow-y-auto max-h-[80vh]">
+                    <button id="closeModificationsModalBtn" class="absolute top-3 right-3">
+                        ✕
+                    </button>
+                    <div id="modificationsModalContentContainer"></div>
+                </div>
             </div>
-            
-            <!-- Добавленное время в правом нижнем углу -->
-            <div class="absolute bottom-2 right-4 text-gray-500 text-sm" style="display: block !important;">
-                @if($advert->created_at)
-                    @if($advert->created_at->isToday())
-                        сегодня в {{ $advert->created_at->format('H:i') }}
-                    @elseif($advert->created_at->isYesterday())
-                        вчера в {{ $advert->created_at->format('H:i') }}
-                    @else
-                        {{ $advert->created_at->format('d.m.Y в H:i') }}
-                    @endif
-                @else
-                    дата не указана
-                @endif
-            </div>
-        </div>
-    </div>
-    @endforeach
-</div>
-        <div id="filters-container" class="blockadvert p-4 filters bg-[#f3f3f3] w-1/3 h-[32rem] rounded-2xl shadow-md hidden xl:block">
-            <!-- Блок "Модификации" -->
-            
-<div id="modifications-container" class="modification p-4 h-1/2 bg-[#f3f3f3] flex flex-col">
-    <!-- Блок с модификациями -->
-    <div class="flex-grow">
-        <label class="font-medium">Модификации:</label>
-        <div id="modifications-buttons" class="flex space-x-2 mb-2 hidden">
-            <button id="select-all-mods" class="text-blue-500 hover:text-blue-700">Отметить все</button>
-            <button id="deselect-all-mods" class="text-blue-500 hover:text-blue-700">Убрать все</button>
-        </div>
-        <div id="modifications" class="flex flex-col overflow-y-auto" style="display: none;">
-            <!-- Здесь будут отображаться модификации -->
-        </div>
-        <div id="modifications-placeholder" class="text-gray-500 mt-2 hidden">
-            Для отображения модификаций выберите параметры автомобиля
+{{--            @include('components.modifications_search-form')--}}
         </div>
     </div>
 
-    <!-- Отдельный блок для кнопки -->
-    <div class="mt-4">
-        <button id="openModificationsModalBtn" class="w-[75%] bg-[#E9E9E9] text-black px-4 py-2 rounded-lg md:hidden">
-            Показать все модификации
-        </button>
+    <div class="h-24">
+        @include('components.indexpagination', ['adverts' => $adverts])
     </div>
-</div>
-
-<!-- Модальное окно для отображения всех модификаций -->
-<div id="modificationsModal" class="fixed inset-0 bg-white z-50 overflow-y-auto hidden">
-    <div class="p-4">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Все модификации</h2>
-            <button id="closeModificationsModalBtn" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div id="modificationsModalContent" class="overflow-y-auto">
-            <!-- Сюда будут вставлены модификации -->
-        </div>
-    </div>
-</div>
-        
-            <!-- Блок "Дополнительно" -->
-            <!--<div id="additional-container" class="modification mt-12 h-1/2">
-                <label class="font-medium">Дополнительно:</label>
-                <div id="additional-options" class="flex flex-col mt-2">
-                
-                    <label class="flex items-center space-x-2 mb-2">
-                        <input type="checkbox" class="form-checkbox text-blue-500">
-                        <span class="text-gray-700">Есть установка</span>
-                    </label>
-                    <label class="flex items-center space-x-2 mb-2">
-                        <input type="checkbox" class="form-checkbox text-blue-500">
-                        <span class="text-gray-700">Есть эвакуатор</span>
-                    </label>
-                    <label class="flex items-center space-x-2 mb-2">
-                        <input type="checkbox" class="form-checkbox text-blue-500">
-                        <span class="text-gray-700">Есть рассрочка/кредит</span>
-                    </label>
-                    <label class="flex items-center space-x-2 mb-2">
-                        <input type="checkbox" class="form-checkbox text-blue-500">
-                        <span class="text-gray-700">Есть доставка</span>
-                    </label>
-                </div>
-            </div>-->
-        </div>
-    </div>
-
-        <div class="h-24">
-            @include('components.indexpagination', ['adverts' => $adverts])
-        </div>
     @endif
 </div>
-<div id="modificationsModal" class="fixed inset-0 bg-white z-50 overflow-y-auto hidden">
-    <div class="p-4">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Все модификации</h2>
-            <button id="closeModificationsModalBtn" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div id="modificationsModalContent" class="overflow-y-auto">
-            <!-- Сюда будут вставлены модификации -->
-        </div>
-    </div>
-</div>
- <button id="scrollToTopBtn" title="Наверх" class="fixed bottom-4 right-4 p-3 bg-gray-500 text-white rounded-full shadow-lg hover:bg-gray-600 transition duration-300 hidden">
-    <i class="fas fa-arrow-up"></i>
+{{--<div id="modificationsModal" class="fixed inset-0 bg-white z-50 overflow-y-auto hidden">--}}
+{{--    <div class="p-4">--}}
+{{--        <div class="flex justify-between items-center mb-4">--}}
+{{--            <h2 class="text-xl font-semibold">Все модификации</h2>--}}
+{{--            <button id="closeModificationsModalBtn" class="text-gray-500 hover:text-gray-700">--}}
+{{--                <i class="fas fa-times"></i>--}}
+{{--            </button>--}}
+{{--        </div>--}}
+{{--        <div id="modificationsModalContent" class="overflow-y-auto">--}}
+{{--            <!-- Сюда будут вставлены модификации -->--}}
+{{--        </div>--}}
+{{--    </div>--}}
+{{--</div>--}}
+<button
+    id="scrollToTopBtn"
+    title="Наверх"
+    class="
+    fixed bottom-4 right-4
+    w-12 h-12
+    bg-gray-500 hover:bg-gray-600
+    text-white
+    rounded-full
+    shadow-lg
+    flex items-center justify-center
+    transition-colors duration-300
+    z-50
+    hidden
+  ">
+    <i class="fas fa-arrow-up text-xl leading-none"></i>
 </button>
+
+
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const productNameElements = document.querySelectorAll('.product-name');
@@ -487,7 +315,7 @@ body {
 
         return slug;
     }
-    
+
 function generateAdvertUrl(advert) {
     const baseUrl = '{{ route("adverts.show", ["id" => ":id", "product_name_slug" => ":product_name_slug"]) }}';
 
@@ -557,17 +385,18 @@ function updateModificationsPlaceholder() {
 
 // Функция для переключения видимости блока с модификациями
 function toggleModificationsVisibility() {
-    const modificationsContainer = document.getElementById('modifications');
-
-    // Переключаем состояние блока
-    if (modificationsContainer.style.display === 'none') {
-        modificationsContainer.style.display = 'flex'; // Показываем блок
-    } else {
-        modificationsContainer.style.display = 'none'; // Скрываем блок
-    }
-
-    // Обновляем состояние текста
-    updateModificationsPlaceholder();
+    // console.log('toggleModificationsVisibility');
+    // const modificationsContainer = document.getElementById('modifications');
+    //
+    // // Переключаем состояние блока
+    // if (modificationsContainer.style.display === 'none') {
+    //     modificationsContainer.style.display = 'flex'; // Показываем блок
+    // } else {
+    //     modificationsContainer.style.display = 'none'; // Скрываем блок
+    // }
+    //
+    // // Обновляем состояние текста
+    // updateModificationsPlaceholder();
 }
 
 // Добавляем обработчики событий на изменение значений полей
@@ -596,33 +425,33 @@ function handleFiltersVisibility() {
     if (window.innerWidth < 1280) {
         // Скрываем основной блок фильтров
         filtersContainer.classList.add('hidden');
-        
+
         // Показываем блок под поиском
         searchFiltersContainer.classList.remove('hidden');
-        
+
         // Проверяем, есть ли уже загруженные модификации в мобильном контейнере
         const hasExistingModifications = document.querySelector('#search-filters-container .modification-checkbox');
-        
+
         // Копируем содержимое только если модификаций еще нет
         if (!hasExistingModifications) {
             searchFiltersContainer.innerHTML = filtersContainer.innerHTML;
         }
-        
+
         // Применяем стили для мобильной версии
         searchFiltersContainer.classList.add('mobile-filters');
-        
+
         // Показываем внешний блок
         searchFiltersWrapper.classList.remove('hidden');
     } else {
         // Показываем основной блок фильтров
         filtersContainer.classList.remove('hidden');
-        
+
         // Скрываем блок под поиском
         searchFiltersContainer.classList.add('hidden');
-        
+
         // Убираем стили для мобильной версии
         searchFiltersContainer.classList.remove('mobile-filters');
-        
+
         // Скрываем внешний блок если он пуст
         if (searchFiltersContainer.innerHTML.trim() === '') {
             searchFiltersWrapper.classList.add('hidden');
@@ -631,10 +460,10 @@ function handleFiltersVisibility() {
 }
 
     // Вызываем функцию при загрузке страницы
-    handleFiltersVisibility();
+    //handleFiltersVisibility();
 
     // Вызываем функцию при изменении размера окна
-    window.addEventListener('resize', handleFiltersVisibility);
+    //window.addEventListener('resize', handleFiltersVisibility);
 });
     </script>
     <script>
@@ -659,33 +488,7 @@ function handleFiltersVisibility() {
     });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const openModalBtn = document.getElementById('openModificationsModalBtn');
-    const closeModalBtn = document.getElementById('closeModificationsModalBtn');
-    const modificationsModal = document.getElementById('modificationsModal');
-    const modificationsModalContent = document.getElementById('modificationsModalContent');
-    const modificationsContainer = document.getElementById('modifications');
-
-    // Открываем модальное окно
-    openModalBtn.addEventListener('click', () => {
-        // Копируем содержимое модификаций в модальное окно
-        modificationsModalContent.innerHTML = modificationsContainer.innerHTML;
-        modificationsModal.style.display = 'block';
-    });
-
-    // Закрываем модальное окно
-    closeModalBtn.addEventListener('click', () => {
-        modificationsModal.style.display = 'none';
-    });
-
-    // Закрываем модальное окно при клике вне его области
-    modificationsModal.addEventListener('click', (event) => {
-        if (event.target === modificationsModal) {
-            modificationsModal.style.display = 'none';
-        }
-    });
-});
     </script>
-  @include('components.footer')   
+  @include('components.footer')
 </body>
 </html>

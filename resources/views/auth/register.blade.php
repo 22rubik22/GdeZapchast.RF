@@ -75,11 +75,11 @@
   <!-- Поле для пароля -->
   <input type="password" name="password" id="passwordInput" placeholder="Пароль" required class="w-full p-3 border rounded-md">
   <span class="toggle-password absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer" onclick="togglePasswordVisibility('passwordInput', 'confirmPasswordInput', this)">
-    <img src="images/close_password.png" alt="Показать" class="password-icon w-5 h-5">
+    <img src="../../../public/images/close_password.png" alt="Показать" class="password-icon w-5 h-5">
   </span>
   </div>
   <div id="passwordMessage" class="text-red-500 text-sm mt-1 hidden">Пароль должен содержать минимум 8 символов и одну заглавную букву</div>
-  
+
             <!-- Поле для подтверждения пароля -->
             <input type="password" name="password_confirmation" id="confirmPasswordInput" placeholder="Повторите пароль" required class="w-full p-3 border rounded-md">
 
@@ -121,7 +121,7 @@
         <p class="mb-16 mt-4 text-center">После регистрации вам будет отправлено письмо для подтверждения почты.</p>
     </div>
 
- @include('components.footer')   
+ @include('components.footer')
 <script>
   const passwordInput = document.getElementById('passwordInput');
   const passwordMessage = document.getElementById('passwordMessage');

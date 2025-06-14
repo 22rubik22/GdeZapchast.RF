@@ -1,4 +1,14 @@
-<div class="bg-white rounded-lg"
+<div class="
+    block
+    bg-white rounded-lg
+    shadow transition-shadow duration-150
+    hover:shadow-lg
+    active:scale-95
+    transform
+    cursor-pointer
+    focus:outline-none focus:ring-2
+    focus:ring-blue-300
+  "
      onclick="location.href=generateAdvertUrl({
          id: '{{ $advert->id }}',
          product_name: '{{ $advert->product_name }}',
@@ -32,27 +42,27 @@
                 <span>{{ $advert->brand }}</span>
                 <span class="mx-1">|</span>
             @endif
-            
+
             @if($advert->model)
                 <span>{{ $advert->model }}</span>
                 <span class="mx-1">|</span>
             @endif
-            
+
             @if($advert->year)
                 <span>{{ $advert->year }}</span>
             @endif
         </div>
-        
+
         <div style='min-height: 20px;'>
             @if($advert->number)
             <p class="text-sm text-gray-600">
                 <i class="fas fa-barcode"></i>
                 <span>{{ $advert->number }}</span>
             </p>
-        @endif     
+        @endif
         </div>
-       
-        
+
+
         <!-- Блок со временем, который всегда будет внизу -->
          <div class="text-gray-500 text-sm mt-auto" style="display: block !important;">
                 @if($advert->created_at)

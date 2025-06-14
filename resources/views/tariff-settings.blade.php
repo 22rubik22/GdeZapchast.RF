@@ -45,9 +45,9 @@
         display: none;
         z-index: 1000;
     }
-    
 
- 
+
+
 </style>
 <body class="flex justify-center flex-col">
     @include('components.header-seller')
@@ -69,7 +69,7 @@
     <div class="slider-container">
 
     <div class="flex justify-center">
-        <input type="text" id="ad-count-manual" min="1000" max="300000" step="100" value="1000" class="w-[20%] px-6 py-4 rounded-xl bg-[#f5f5f5] text-4xl text-center mb-6">
+        <input type="text" id="ad-count-manual" min="1000" max="300000" step="100" value="1000" class="max-md:w-[100%] w-max px-6 py-4 rounded-xl bg-[#f5f5f5] text-4xl text-center mb-6">
     </div>
     <input type="range" id="ad-count" name="ad-count" min="1000" max="300000" step="100" value="1000" class="w-3/4">
     <span id="ad-count-value" class="inline-block ml-2 font-bold"></span>
@@ -138,7 +138,7 @@
             <button class="px-6 py-1 bg-blue-500 text-white rounded-lg float-right mb-16">+ Добавить еще</button>
             <p class="mt-4 text-center text-gray-500">Если есть какие-либо дополнительные условия и/или ограничения, укажите их ниже:</p>
             <textarea id="additional-conditions" name="additional-conditions" rows="4" class="w-full border rounded-md p-2"></textarea>
-            
+
             <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg mt-4">Сохранить</button>
         </form>
     </div>
@@ -191,7 +191,7 @@
 
         // Получаем кнопку "Подключить"
         var btn = document.querySelector(".bg-blue-500.hover\\:bg-blue-600.text-white.py-2.px-12.rounded-lg");
-        
+
 
         // Получаем элемент <span>, который закрывает модальное окно
         var span = document.getElementsByClassName("close")[0];

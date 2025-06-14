@@ -60,7 +60,7 @@
             <h1 class="text-3xl font-bold mb-4">{{ $user->username }}</h1>
             <p class="text-gray-600 mb-2">Email: <span class="text-black">{{ $user->email }}</span></p>
 
-           
+
 
 
             @if(auth()->user()->user_status == 1)
@@ -90,20 +90,7 @@
         </div>
         <!-- Пополнение кошелька -->
         <div class=" p-4 rounded-lg text-right flex items-center mt-4 md:mt-0 md:ml-auto">
-            @if(auth()->user()->user_status == 1)
-                <div class="bg-orange-100 p-4 rounded-lg text-right flex items-center mt-4 md:mt-0 md:ml-auto">
-                    <div>
-                       <p class="text-blue-600 text-xl font-bold flex items-center">
-    <i class="fas fa-wallet text-2xl text-gray-600 mr-2"></i> {{ isset($balance) ? $balance : 0 }} ₽
-</p>
-                        <a href ="{{ route('pay.form') }}">
-                            <p class="text-gray-600 flex items-center">
-                                <i class="fas fa-plus text-gray-600 mr-1"></i> Пополнить кошелек
-                            </p>
-                        </a>
-                    </div>
-                </div>
-            @endif
+
         </div>
     </div>
     <!-- Кнопки действий -->

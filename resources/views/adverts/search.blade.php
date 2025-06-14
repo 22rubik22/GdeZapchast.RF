@@ -21,7 +21,7 @@
     <!-- /Yandex.Metrika counter -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Все товары</title>
+    <title>@if ($seller) Поиск {{ $seller['username'] }} | Магазин @else Все товары  @endif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
     <link rel="shortcut icon" href="{{asset('images/Group 438.png')}}" type="image/x-icon">
@@ -109,6 +109,48 @@
         #fullScreenMenu.active, #filterMenu.active {
             display: block; /* Показываем меню, когда оно активно */
         }
+
+        /*.show_scroll {
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+
+        .show_scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .show_scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .show_scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .show_scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+
+        .show_scroll {
+            overflow-y: scroll !important;
+        }
+
+        .show_scroll::-webkit-scrollbar {
+            width: 12px;
+            background-color: #fafafa;
+            border-radius: 6px;
+        }
+
+        .show_scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            border: 3px solid transparent;
+        }*/
     </style>
 </head>
 <body class="flex flex-col items-center ">
@@ -118,47 +160,115 @@
 <!-- Карта -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
 
-<div id="map" class="w-full h-64 md:h-96 hidden sm:block"></div>
+@if ($seller)
+    @include('components.seller-info-block', ['user' => $seller])
+@else
+    <div id="map" class="w-full h-64 md:h-96 hidden sm:block"></div>
+@endif
 
 <!-- Поисковая форма -->
-<div class="w-full mt-20 md:w-3/4 mt-10 mx-auto hidden sm:block">
-    @include('components.search-form')
+<div class="w-full mt-20 md:w-3/4 mt-10 mx-auto sm:block">
+    @include('components.search-form', ['user' => $seller, 'usernameCode' => $sellerCode])
 </div>
 
-<div class=" blockadvert filters bg-white mt-4 w-full hidden md:w-3/4 p-4 rounded-lg shadow-md sm:block md:block 2xl:hidden">
-    <form method="GET" action="{{ route('adverts.filterByEngine') }}">
-        <h4 class="text-xl font-semibold mb-4">Фильтры по двигателю:</h4>
-        @foreach($engines as $engine)
-            <div>
-                <input type="checkbox" name="engines[]" value="{{ $engine }}" id="engine-{{ $engine }}"
-                       {{ in_array($engine, request('engines', [])) || !request()->has('engines') ? 'checked' : '' }}
-                       class="mr-2">
-                <label for="engine-{{ $engine }}" class="text-lg">{{ !empty($engine) ? ucfirst($engine) : 'Не указан' }}</label>
-            </div>
-        @endforeach
+{{--<div class="blockadvert filters bg-white mt-4 w-full hidden md:w-3/4 p-4 rounded-lg shadow-md sm:block md:block 2xl:hidden">--}}
+{{--    <form method="GET" action="{{ route('adverts.filterByEngine') }}">--}}
+{{--        <h4 class="text-xl font-semibold mb-4">Фильтры по двигателю33:</h4>--}}
+{{--        @foreach($engines as $engine)--}}
+{{--            <div>--}}
+{{--                <input type="checkbox" name="engines[]" value="{{ $engine }}" id="engine-{{ $engine }}"--}}
+{{--                       {{ in_array($engine, request('engines', [])) || !request()->has('engines') ? 'checked' : '' }}--}}
+{{--                       class="mr-2">--}}
+{{--                <label for="engine-{{ $engine }}" class="text-lg">{{ !empty($engine) ? ucfirst($engine) : 'Не указан' }}</label>--}}
+{{--            </div>--}}
+{{--        @endforeach--}}
 
-        <!-- Сохраняем другие параметры запроса -->
-        <input type="hidden" name="search_query" value="{{ request('search_query') }}">
-        <input type="hidden" name="brand" value="{{ request('brand') }}">
-        <input type="hidden" name="model" value="{{ request('model') }}">
-        <input type="hidden" name="year" value="{{ request('year') }}">
+{{--        <input type="hidden" name="search_query" value="{{ request('search_query') }}">--}}
+{{--        <input type="hidden" name="brand" value="{{ request('brand') }}">--}}
+{{--        <input type="hidden" name="model" value="{{ request('model') }}">--}}
+{{--        <input type="hidden" name="year" value="{{ request('year') }}">--}}
 
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4">Применить фильтры</button>
-    </form>
-</div>
+{{--        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4">Применить фильтры</button>--}}
+{{--    </form>--}}
+{{--</div>--}}
 
 <!-- Основной контент -->
-<div class="flex flex-col w-full sm:flex-row sm:justify-start sm:w-full md:w-3/4">
+<div class="
+    flex
+    flex-col-reverse
+    w-full
+    xl:flex-row
+    sm:justify-start
+    sm:w-full
+    md:mt-8
+    sm:gap-20
+    md:w-3/4
+    max-w-6xl
+">
+
     <!-- Результаты поиска -->
-    <div class="w-full flex justify-center items-center space-x-4 mt-14 mb-4 sm:hidden px-4 hidden-on-map">
-        <button id="sortButton" class="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md w-1/2">
-            <i class="fas fa-sort mr-2"></i>
-            Сортировка
-        </button>
-        <button id="filterButton" class="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md w-1/2">
-            <i class="fas fa-filter mr-2"></i>
-            Фильтры
-        </button>
+    <div id="listView" class="w-full px-2">
+        <!-- Вывод exactMatchAdvertsPaginated -->
+       @if(isset($exactMatchAdvertsPaginated) && $exactMatchAdvertsPaginated->isNotEmpty())
+            <h2 class="text-2xl font-semibold mt-8">То, что вы искали:</h2>
+            <!-- Для телефонов -->
+            <div id="exactMatchPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden mb-20">
+                @foreach($exactMatchAdvertsPaginated as $advert)
+                    @include('components.advert-card-phone', ['advert' => $advert])
+                @endforeach
+            </div>
+            <!-- Для больших экранов -->
+            <div id="exactMatchDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
+                @foreach($exactMatchAdvertsPaginated as $advert)
+                    @include('components.advert-card-desktop', ['advert' => $advert])
+                @endforeach
+            </div>
+        @endif
+
+        <!-- Вывод engineMatchAdvertsPaginated -->
+       @if(isset($engineMatchAdvertsPaginated) && $engineMatchAdvertsPaginated->isNotEmpty())
+            <h2 class="text-2xl font-semibold mt-8">Подойдет к вашему автомобилю:</h2>
+            <!-- Для телефонов -->
+            <div id="engineOrNumberMatchPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden mb-20">
+                @foreach($engineMatchAdvertsPaginated as $advert)
+                    @include('components.advert-card-phone', ['advert' => $advert])
+                @endforeach
+            </div>
+            <!-- Для больших экранов -->
+            <div id="engineOrNumberMatchDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
+                @foreach($engineMatchAdvertsPaginated as $advert)
+                    @include('components.advert-card-desktop', ['advert' => $advert])
+                @endforeach
+            </div>
+        @endif
+
+        <!-- Вывод similarAdvertsPaginated -->
+       @if(isset($similarAdvertsPaginated) && $similarAdvertsPaginated->isNotEmpty())
+            <h2 class="text-2xl font-semibold mt-8">Похоже на то, что вы ищете:</h2>
+            <!-- Для телефонов -->
+            <div id="allAdvertsPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden mb-20">
+                @foreach($similarAdvertsPaginated as $advert)
+                    @include('components.advert-card-phone', ['advert' => $advert])
+                @endforeach
+            </div>
+            <!-- Для больших экранов -->
+            <div id="allAdvertsDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
+                @foreach($similarAdvertsPaginated as $advert)
+                    @include('components.advert-card-desktop', ['advert' => $advert])
+                @endforeach
+            </div>
+        @endif
+
+        <!-- Общая пагинация -->
+        @if(isset($paginatedAdverts) && $paginatedAdverts->hasPages())
+        <div class="mb-20">
+            @include('components.pagination', ['paginator' => $paginatedAdverts])
+        </div>
+        @endif
+
+        @if(isset($paginatedAdverts) && $paginatedAdverts->isEmpty())
+            <p class="text-center text-lg mt-8">Нет результатов для отображения.</p>
+        @endif
     </div>
 
     <div id="mapsButton" class="w-full flex justify-center items-center space-x-4 mb-4 sm:hidden px-4">
@@ -172,106 +282,82 @@
         </button>
     </div>
 
-    <div id="listView" class="w-full px-2">
-    <!-- Вывод exactMatchAdvertsPaginated -->
-   @if(isset($exactMatchAdvertsPaginated) && $exactMatchAdvertsPaginated->isNotEmpty())
-        <h2 class="text-2xl font-semibold mt-8">То, что вы искали:</h2>
-        <!-- Для телефонов -->
-        <div id="exactMatchPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden">
-            @foreach($exactMatchAdvertsPaginated as $advert)
-                @include('components.advert-card-phone', ['advert' => $advert])
-            @endforeach
-        </div>
-        <!-- Для больших экранов -->
-        <div id="exactMatchDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
-            @foreach($exactMatchAdvertsPaginated as $advert)
-                @include('components.advert-card-desktop', ['advert' => $advert])
-            @endforeach
-        </div>
-    @endif
-
-    <!-- Вывод engineMatchAdvertsPaginated -->
-   @if(isset($engineMatchAdvertsPaginated) && $engineMatchAdvertsPaginated->isNotEmpty())
-        <h2 class="text-2xl font-semibold mt-8">Подойдет к вашему автомобилю:</h2>
-        <!-- Для телефонов -->
-        <div id="engineOrNumberMatchPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden">
-            @foreach($engineMatchAdvertsPaginated as $advert)
-                @include('components.advert-card-phone', ['advert' => $advert])
-            @endforeach
-        </div>
-        <!-- Для больших экранов -->
-        <div id="engineOrNumberMatchDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
-            @foreach($engineMatchAdvertsPaginated as $advert)
-                @include('components.advert-card-desktop', ['advert' => $advert])
-            @endforeach
-        </div>
-    @endif
-
-    <!-- Вывод similarAdvertsPaginated -->
-   @if(isset($similarAdvertsPaginated) && $similarAdvertsPaginated->isNotEmpty())
-        <h2 class="text-2xl font-semibold mt-8">Похоже на то, что вы ищете:</h2>
-        <!-- Для телефонов -->
-        <div id="allAdvertsPhoneListView" class="grid grid-cols-2 gap-4 w-full sm:hidden">
-            @foreach($similarAdvertsPaginated as $advert)
-                @include('components.advert-card-phone', ['advert' => $advert])
-            @endforeach
-        </div>
-        <!-- Для больших экранов -->
-        <div id="allAdvertsDesktopListView" class="hidden sm:flex w-full flex-col items-start justify-center">
-            @foreach($similarAdvertsPaginated as $advert)
-                @include('components.advert-card-desktop', ['advert' => $advert])
-            @endforeach
-        </div>
-    @endif
-
-    <!-- Общая пагинация -->
-    @if(isset($paginatedAdverts) && $paginatedAdverts->hasPages())
-    <div class="mb-20">
-        @include('components.pagination', ['paginator' => $paginatedAdverts])
+    <div class="w-full flex justify-center items-center space-x-4 mt-14 mb-4 sm:hidden px-4 hidden-on-map">
+        <button id="sortButton" class="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md w-1/2">
+            <i class="fas fa-sort mr-2"></i>
+            Сортировка
+        </button>
+        <button id="filterButton" class="flex items-center justify-center px-4 py-2 bg-gray-700 text-white rounded-md w-1/2">
+            <i class="fas fa-filter mr-2"></i>
+            Фильтры
+        </button>
     </div>
-@endif
 
-@if(isset($paginatedAdverts) && $paginatedAdverts->isEmpty())
-    <p class="text-center text-lg mt-8">Нет результатов для отображения.</p>
-@endif
-</div>
 
-<!-- Фильтры по параметру engine для больших экранов -->
-<div class="filters bg-white mt-4 ml-12 mt-24 hidden 2xl:block w-[35%]">
-    <form method="GET" class="blockadvert p-2 rounded-lg shadow-md flex flex-col" action="{{ route('adverts.filterByEngine') }}" id="engineFilterForm">
-        <h4 class="text-xl text-center font-semibold mb-4">Фильтры по двигателю:</h4>
-        
-        <!-- Кнопки "Отметить все" и "Убрать все" -->
-        <div class="flex space-x-2 mb-3">
-            <button type="button" onclick="checkAllEngines(true); return false;" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-6 py-2 rounded-lg border-2 border-blue-500">
-                Отметить все
-            </button>
-            <button type="button" onclick="checkAllEngines(false); return false;" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-6 py-2 rounded-lg border-2 border-blue-500">
-                Убрать все
-            </button>
-        </div>
-        
-        <!-- Контейнер для списка двигателей с прокруткой -->
-        <div class="overflow-y-auto max-h-64 mb-4 pr-2">
-            @foreach($engines as $engine)
-                <div class="py-1">
-                    <input type="checkbox" name="engines[]" value="{{ $engine }}" id="engine-{{ $engine }}"
-                           {{ in_array($engine, request('engines', [])) || !request()->has('engines') ? 'checked' : '' }}
-                           class="mr-2 engine-checkbox">
-                    <label for="engine-{{ $engine }}" class="text-lg">{{ !empty($engine) ? ucfirst($engine) : 'Не указан' }}</label>
-                </div>
-            @endforeach
+
+    <!-- Фильтры по параметру engine для больших экранов -->
+    <div class="filters bg-white xl:mt-24 w-full xl:w-1/3 flex flex-col gap-10">
+
+        <div
+            id="filters-container"
+            class="
+                max-md:bg-[#5e94f7]
+                p-4
+                filters
+                bg-[#f3f3f3]
+                w-full
+                h-auto
+                max-h-[32rem]
+                md:rounded-2xl
+                shadow-md
+            "
+        >
+
+            @include('components.modifications_search-form')
         </div>
 
-        <!-- Сохраняем другие параметры запроса -->
-        <input type="hidden" name="search_query" value="{{ request('search_query') }}">
-        <input type="hidden" name="brand" value="{{ request('brand') }}">
-        <input type="hidden" name="model" value="{{ request('model') }}">
-        <input type="hidden" name="year" value="{{ request('year') }}">
+        <form method="GET" class="blockadvert p-2 rounded-lg shadow-md flex flex-col max-sm:hidden"
+              action="
+                    @if ($seller && $sellerCode)
+                        {{ route('seller.filterByEngine', ['id' => $seller->id, 'username' => $sellerCode]) }}
+                    @else
+                        {{ route('adverts.filterByEngine') }}
+                   @endif
+               "
+              id="engineFilterForm">
+            <h4 class="text-xl text-center font-semibold mb-4">Фильтры по двигателю:</h4>
 
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-auto">Применить фильтры</button>
-    </form>
-</div>
+            <!-- Кнопки "Отметить все" и "Убрать все" -->
+            <div class="flex space-x-2 mb-3">
+                <button type="button" onclick="checkAllEngines(true); return false;" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-6 py-2 rounded-lg border-2 border-blue-500">
+                    Отметить все
+                </button>
+                <button type="button" onclick="checkAllEngines(false); return false;" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-6 py-2 rounded-lg border-2 border-blue-500">
+                    Убрать все
+                </button>
+            </div>
+
+            <!-- Контейнер для списка двигателей с прокруткой -->
+            <div class="overflow-y-auto max-h-64 mb-4 pr-2">
+                @foreach($engines as $engine)
+                    <div class="py-1">
+                        <input type="checkbox" name="engines[]" value="{{ $engine }}" id="engine-{{ $engine }}"
+                               {{ in_array($engine, request('engines', [])) || !request()->has('engines') ? 'checked' : '' }}
+                               class="mr-2 engine-checkbox">
+                        <label for="engine-{{ $engine }}" class="text-lg">{{ !empty($engine) ? ucfirst($engine) : 'Не указан' }}</label>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Сохраняем другие параметры запроса -->
+            <input type="hidden" name="search_query" value="{{ request('search_query') }}">
+            <input type="hidden" name="brand" value="{{ request('brand') }}">
+            <input type="hidden" name="model" value="{{ request('model') }}">
+            <input type="hidden" name="year" value="{{ request('year') }}">
+
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-auto">Применить фильтры</button>
+        </form>
+    </div>
 </div>
 
 
@@ -429,19 +515,19 @@
 
     <!-- Подключение Yandex Maps -->
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=9fbfa4df-7869-44a3-ae8e-0ebc49545ea9" type="text/javascript"></script>
-    
+
     <script>
     function checkAllEngines(checked) {
         const checkboxes = document.querySelectorAll('.engine-checkbox');
         checkboxes.forEach(checkbox => {
             checkbox.checked = checked;
         });
-        
+
         // Не отправляем форму автоматически
         return false;
     }
     </script>
-    
+
     <script>
     function generateProductNameSlug(productName) {
         // Функция для транслитерации кириллицы в латиницу (упрощенный вариант)
@@ -469,7 +555,7 @@
 
         return slug;
     }
-    
+
 function generateAdvertUrl(advert) {
     const baseUrl = '{{ route("adverts.show", ["id" => ":id", "product_name_slug" => ":product_name_slug"]) }}';
 
@@ -504,13 +590,14 @@ function generateAdvertUrl(advert) {
 </script>
 
     <script>
+        @if (!$seller)
         let mapInitialized = false;
         let myMap;
 
         ymaps.ready(function() {
             myMap = new ymaps.Map('map', {
                 center: [52.753994, 104.622093],
-                zoom: 9, 
+                zoom: 9,
                 controls: ['zoomControl']
             });
 
@@ -585,8 +672,22 @@ function generateAdvertUrl(advert) {
                 }
             });
         });
-
+        @endif
 document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('mousedown', function(e) {
+            const circle = document.createElement('span');
+            circle.classList.add('ripple');
+            // позиционируем центр круга в точке клика
+            const rect = card.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            circle.style.width = circle.style.height = size + 'px';
+            circle.style.left = e.clientX - rect.left - size/2 + 'px';
+            circle.style.top  = e.clientY - rect.top  - size/2 + 'px';
+            this.appendChild(circle);
+            setTimeout(() => circle.remove(), 600);
+        });
+    });
     // Получаем элементы
     const listButton = document.getElementById('listButton');
     const mapButton = document.getElementById('mapButton');
@@ -604,8 +705,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Функция для показа списка (скрывает карту и меню)
     function showListView() {
         listView.classList.remove('hidden');
-        mapElement.classList.remove('full-screen');
-        mapElement.classList.add('hidden', 'sm:block'); // Возвращаем оригинальные классы
+        if (mapElement) {
+            mapElement.classList.remove('full-screen');
+            mapElement.classList.add('hidden', 'sm:block'); // Возвращаем оригинальные классы
+        }
         fullScreenMenu.classList.remove('active');
         filterMenu.classList.remove('active');
         listButton.classList.add('bg-blue-600', 'text-white');

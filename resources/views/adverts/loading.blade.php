@@ -13,51 +13,68 @@
             border-radius: 50%;
             width: 50px;
             height: 50px;
-            animation: spin 2s linear infinite;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
-    <div class="text-center">
-        <div class="loader mx-auto mb-4"></div>
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Идет поиск запчастей...</h1>
-        <p class="text-gray-600">Пожалуйста, подождите</p>
-        
-        <div class="mt-8 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
-            <h2 class="text-lg font-semibold mb-2">Параметры поиска:</h2>
-            <p id="searchParams" class="text-gray-700"></p>
-        </div>
-    </div>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<div class="text-center">
+    <div class="loader mx-auto mb-4"></div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Идет поиск запчастей…</h1>
+    <p class="text-gray-600">Пожалуйста, подождите</p>
 
- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Отображаем параметры поиска
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
+        <h2 class="text-lg font-semibold mb-2">Параметры поиска:</h2>
+        <p id="searchParams" class="text-gray-700"></p>
+    </div>
+</div>
+
+<form id="redirectForm" method="POST" action="{{ route('adverts.search') }}?">
+    @csrf
+    <input type="hidden" name="selected_modifications" id="selected_modifications" value="[]">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
-        let searchText = '';
-        
-        if (params.get('search_query')) {
-            searchText += `Запрос: ${params.get('search_query')}<br>`;
+        let summary = '';
+
+        if (params.has('search_query')) summary += `Запрос: ${params.get('search_query')}<br>`;
+        if (params.has('brand'))        summary += `Марка: ${params.get('brand')}<br>`;
+        if (params.has('model'))        summary += `Модель: ${params.get('model')}<br>`;
+        if (params.has('year'))         summary += `Год: ${params.get('year')}<br>`;
+
+        document.getElementById('searchParams').innerHTML = summary || 'Не указаны';
+
+        // Собираем GET-параметры обратно в строку
+        const qs = params.toString();
+        const form = document.getElementById('redirectForm');
+
+        const sellerRouteTemplate = "{{ route('seller.search', [
+              'id'       => ':sellerId',
+              'username' => ':sellerCode'
+          ]) }}";
+
+        let routeUrl = "{{ route('adverts.search') }}";
+        if (params.has('sellerId') && params.has('sellerCode')) {
+            const id   = encodeURIComponent(params.get('sellerId'));
+            const code = encodeURIComponent(params.get('sellerCode'));
+
+            routeUrl = sellerRouteTemplate
+                .replace(':sellerId', id)
+                .replace(':sellerCode', code);
         }
-        if (params.get('brand')) {
-            searchText += `Марка: ${params.get('brand')}<br>`;
-        }
-        if (params.get('model')) {
-            searchText += `Модель: ${params.get('model')}<br>`;
-        }
-        if (params.get('year')) {
-            searchText += `Год: ${params.get('year')}<br>`;
-        }
-        
-        document.getElementById('searchParams').innerHTML = searchText || 'Не указаны';
-        
-        // Перенаправляем на страницу результатов через 1 секунду
-        setTimeout(() => {
-            window.location.href = "{{ route('adverts.search') }}?" + window.location.search;
-        }, 1000);
+        form.action = routeUrl + (qs ? '?' + qs : '');
+
+        // Получаем из localStorage выбранные модификации
+        const mods = localStorage.getItem('selectedModifications') || '[]';
+        document.getElementById('selected_modifications').value = mods;
+
+        // Ждём секунду, а затем отправляем форму POST
+        setTimeout(() => form.submit(), 1000);
     });
 </script>
 </body>

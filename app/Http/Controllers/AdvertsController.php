@@ -36,15 +36,15 @@ class AdvertsController extends Controller
                 $q->where('city', $request->input('city'));
             });
         }
-    
+
         // Пагинация объявлений
         $adverts = $query->paginate(20);
-    
+
         // Получаем список городов для выпадающего списка
         $cities = User::distinct()->pluck('city')->toArray(); // Получаем уникальные города из модели User
-        
-        
-    
+
+
+
         return view('adverts.index', compact('adverts', 'cities'));
     }
 
@@ -53,7 +53,7 @@ class AdvertsController extends Controller
     {
         return view('adverts.create');
     }
-    
+
 
 
     public function store(Request $request)
@@ -159,7 +159,7 @@ public function show(Request $request, $id, $product_name_slug, $brand = null, $
         'branchAddress', 'product_name', 'main_photo_url', 'address_line', 'isFavorite', 'brand', 'model', 'year', 'product_name_slug', 'engine', 'number'
     ));
 }
-    
+
  private function findPartsByProductName($productName)
 {
     return Part::where('part_name', 'LIKE', '%' . $productName . '%')->get();
@@ -192,12 +192,12 @@ private function getRelatedCars($relatedQueries)
     // Возвращаем запрос Eloquent для получения данных из BaseAvto
     return BaseAvto::whereIn('id_modification', $carIds);
 }
-    
+
     // Обновить данные объявления в базе данных
     public function update(Request $request)
     {
         $advert = Advert::find($request->id);
-    
+
         // Обновление текстовых полей
         if ($request->art_number !== $request->old_art_number) {
             $advert->art_number = $request->art_number;
@@ -250,7 +250,7 @@ private function getRelatedCars($relatedQueries)
         if ($request->availability !== $request->old_availability) {
             $advert->availability = $request->availability;
         }
-    
+
         // Обновление URL фотографий
         if ($request->main_photo_url !== $request->old_main_photo_url) {
             $advert->main_photo_url = $request->main_photo_url;
@@ -264,13 +264,13 @@ private function getRelatedCars($relatedQueries)
         if ($request->additional_photo_url_3 !== $request->old_additional_photo_url_3) {
             $advert->additional_photo_url_3 = $request->additional_photo_url_3;
         }
-    
+
         $advert->save();
-    
+
         return redirect()->route('adverts.my_adverts')->with('success', 'Объявление успешно обновлено');
     }
 
-   
+
 public function myAdverts(Request $request)
 {
     $userId = auth()->id();
@@ -338,7 +338,7 @@ public function myAdverts(Request $request)
 
     return response()->json(['success' => true]);
 }
-    
+
    public function viewed(Request $request)
 {
     // Получаем данные из куки и преобразуем в массив
@@ -411,12 +411,12 @@ if ($user) {
 } else {
     return back()->with('error', 'Для доступа к избранному необходимо авторизоваться.');
 }
-    
-    
+
+
     // Получаем текущего авторизованного пользователя
     $user = auth()->user();
 
-  
+
 }
 
 
@@ -427,12 +427,17 @@ public function showLoading(Request $request)
         'brand' => $request->input('brand'),
         'model' => $request->input('model'),
         'year' => $request->input('year'),
-        'selected_modifications' => $request->input('selected_modifications')
+        'selected_modifications' => $request->input('selected_modifications'),
+        'sellerId' => $request->input('sellerId'),
+        'sellerCode' => $request->input('sellerCode'),
     ]);
 }
 
 public function search(Request $request)
 {
+    // middleware
+    $seller = $request->get('seller');
+
     // Получаем данные из запроса
     $searchQuery = $request->input('search_query');
     $searchQuery = preg_replace('/[^\p{L}\p{N}\s]/u', '', $searchQuery);
@@ -447,7 +452,7 @@ public function search(Request $request)
 
     // Получаем выбранные модификации из запроса
     $selectedModifications = json_decode($request->input('selected_modifications', '[]'), true);
-
+    $selectedModificationsSave = $selectedModifications;
     // Разбиваем поисковый запрос на слова
     $words = explode(' ', $searchQuery);
 
@@ -465,13 +470,13 @@ public function search(Request $request)
         if (empty($mainWord) && !empty($words)) {
            $mainWord = $words[0];
         }
-        
+
         $isPartNumberSearch = false;
        // Проверяем, содержит ли строка цифры (возможный номер запчасти)
 if (preg_match('/\d/', $mainWord)) {
-    
+
     $foundIdQueries = [];
-    
+
     // 1. Пытаемся найти по id_queri (точное совпадение) с кэшированием
     $cacheKey = 'user_query_id_'.$mainWord;
     $userQueriesById = Cache::remember($cacheKey, 300, function() use ($mainWord) {
@@ -480,11 +485,11 @@ if (preg_match('/\d/', $mainWord)) {
                       ->limit(100)
                       ->get();
     });
-    
+
     if ($userQueriesById->isNotEmpty()) {
         $foundIdQueries = $userQueriesById->pluck('id_queri')->unique()->toArray();
         $isPartNumberSearch = true;
-    } 
+    }
     // 2. Если не найдено по id_queri, ищем по part_number с оптимизациями
     else {
         $cacheKey = 'user_query_pn_'.$mainWord;
@@ -494,13 +499,13 @@ if (preg_match('/\d/', $mainWord)) {
                           ->limit(100)
                           ->get();
         });
-        
+
         if ($userQueriesByPartNumber->isNotEmpty()) {
             $foundIdQueries = $userQueriesByPartNumber->pluck('id_queri')->unique()->toArray();
             $isPartNumberSearch = true;
         }
     }
-    
+
     // Если нашли какие-то id_queri
     if (!empty($foundIdQueries)) {
         // Оптимизированный поиск названий запчастей
@@ -517,7 +522,7 @@ if (preg_match('/\d/', $mainWord)) {
                      ->values()
                      ->toArray();
         });
-        
+
         if (!empty($partNames)) {
             $mainWord = $partNames[0]; // Используем первое найденное название
         }
@@ -650,7 +655,7 @@ if ($userQueries->isEmpty()) {
 
         // Удаляем дубликаты
         $exactMatchAdverts = $exactMatchAdverts->unique('id');
-        
+
         $engineOrNumberMatchAdverts = $idQueriMatchAdverts;
     }
 } else {
@@ -795,17 +800,17 @@ if (!$isEngineOrPartNumberAnIdQueri) {
             //  --- НОВАЯ ЛОГИКА ПОИСКА ---
         $idQueriList = $userQueries->pluck('id_queri')->toArray();
         $partNumbers = [];
-        
+
         // 1. Получаем part_number по id_queri (Предполагается, что у вас есть таблица, связывающая id_queri и part_number)
         if (!empty($idQueriList)) {
             // Предположим, что у вас есть модель QueryPartNumber, связывающая id_queri и part_number
             $partNumbers = UserQuery::whereIn('id_queri', $idQueriList)->pluck('part_number')->toArray();
             $partNumbers = array_filter(array_unique(array_map('trim', $partNumbers))); // Удаляем пустые и дубликаты
         }
-        
+
         //  Формируем строку для поиска в queri_number
         $searchString = implode(',', $idQueriList);
-        
+
         //  Выполняем поиск в таблице adverts
         $advertsQuery = $this->getBaseAdvertQuery()
             ->where('status_queri', 'done')
@@ -814,41 +819,41 @@ if (!$isEngineOrPartNumberAnIdQueri) {
                     $query->orWhere('queri_number', 'like', '%' . $idQueri . '%');
                 }
             });
-        
+
         $advertsQuery = $this->applyBrandModelYearFilter($advertsQuery, $brand, $model, $year);
         $matchedAdverts = $advertsQuery->limit(5000)->get();
-        
+
         $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->concat($matchedAdverts)->unique('id');
-        
+
         //  Добавляем фильтрацию по названию продукта
         if ($engineOrNumberMatchAdverts->isNotEmpty() && $productName) {
             $engineOrNumberMatchAdverts = $this->filterByProductName($engineOrNumberMatchAdverts, $mainWord, $synonyms);
             Log::info('engineOrNumberMatchAdverts after filterByProductName: ' . count($engineOrNumberMatchAdverts));
         }
-        
+
         //  2.  Поиск по part_number  -----------------------------------------------------
         $partNumberMatchAdvertsQuery = $this->getBaseAdvertQuery();
-        
+
         if (!empty($partNumbers)) {
             $partNumberMatchAdvertsQuery->whereIn('number', $partNumbers); // Предполагается, что 'number' содержит part_number
         }
-        
+
         $partNumberMatchAdvertsQuery = $this->applyBrandModelYearFilter($partNumberMatchAdvertsQuery, $brand, $model, $year);
         $partNumberMatchAdverts = $partNumberMatchAdvertsQuery->limit(5000)->get();
-        
+
         // Объединяем результаты, избегая дубликатов
         $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->concat($partNumberMatchAdverts)->unique('id');
-        
+
         // Поиск объявлений, у которых в number указан найденный id_queri
         $directMatchAdvertsQuery = $this->getBaseAdvertQuery();
-        
+
         if ($idQueriFound) {
             $directMatchAdvertsQuery->where('number', '=', $idQueriFound);
         }
-        
+
         $directMatchAdvertsQuery = $this->applyBrandModelYearFilter($directMatchAdvertsQuery, $brand, $model, $year);
         $directMatchAdverts = $directMatchAdvertsQuery->limit(5000)->get();
-        
+
         // Добавляем найденные объявления в $exactMatchAdverts
         $exactMatchAdvertsIds = $exactMatchAdverts->pluck('id')->toArray(); // Получаем ID уже добавленных объявлений
         foreach ($directMatchAdverts as $advert) {
@@ -856,22 +861,22 @@ if (!$isEngineOrPartNumberAnIdQueri) {
                 $exactMatchAdverts->push($advert);
             }
         }
-        
+
         // Удаляем дубликаты, если они есть
         $exactMatchAdverts = $exactMatchAdverts->unique('id');
-        
+
         // 2.2 Если поиск по соответствиям не дал результатов, ищем по названию
         if ($engineOrPartNumber && $userQueries->isEmpty()) {
             $query = $this->getBaseAdvertQuery();
-        
+
             // Объединяем слова и синонимы в одну строку для полнотекстового поиска
             $searchText = implode(' ', array_merge($words, $synonyms));
             $query->whereRaw('MATCH(product_name) AGAINST (?)', [$searchText]);
         }
-        
+
         $query = $this->applyBrandModelYearFilter($query, $brand, $model, $year);
         $matchAdverts = $query->limit(5000)->get();
-        
+
         }
             // Подготовка объявлений для сортировки
             $directMatchAdverts = $directMatchAdverts->map(function ($advert) {
@@ -892,50 +897,50 @@ if (!$isEngineOrPartNumberAnIdQueri) {
                 }
                 return $advert;
             });
-            
+
                   if ($isPartNumberSearch) {
             // 1. Поиск в user_queries сначала по id_queri
             $userQueries = UserQuery::where('id_queri', $engineOrPartNumber)->get();
-        
+
             // Если не найдено по id_queri, ищем по part_number и получаем связанные id_queri
             if ($userQueries->isEmpty()) {
-                
+
                 $partNumberQueries = UserQuery::where('part_number', $engineOrPartNumber)->get();
-                
+
                 if ($partNumberQueries->isNotEmpty()) {
                     $relatedIds = $partNumberQueries->pluck('id_queri')->filter()->unique();
                     $userQueries = UserQuery::whereIn('id_queri', $relatedIds)->get();
                 }
             }
-        
+
             // 2. Получаем марки и модели автомобилей
             $idCarList = $userQueries->pluck('id_car')->unique()->toArray();
             $baseAvtoRecords = BaseAvto::whereIn('id_modification', $idCarList)->get();
-            
+
             $brandsModels = $baseAvtoRecords->map(function($item) {
                 return ['brand' => $item->brand, 'model' => $item->model];
             })->unique()->toArray();
-        
+
             // 3. Определяем значение need для фильтрации
             $idParts = $userQueries->pluck('id_part')->unique()->filter()->values()->toArray();
             $needValue = null;
-            
+
             if (!empty($idParts)) {
                 $parts = Part::whereIn('part_id', $idParts)->get();
                 $needValues = $parts->pluck('need')->unique()->filter()->values()->toArray();
-                
+
                 if (!empty($needValues)) {
                     $needValue = in_array('engine', $needValues) ? 'engine' : $needValues[0];
                 }
             }
-        
+
             // 4. Поиск объявлений по параметрам
             $partNumberAdverts = collect();
-        
+
             foreach ($brandsModels as $brandModel) {
                 $query = Advert::where('brand', $brandModel['brand'])
                               ->where('model', $brandModel['model']);
-                    
+
                 if ($needValue === 'engine') {
                     $query->where(function($q) {
                         $q->whereNull('engine')->orWhere('engine', '');
@@ -949,20 +954,20 @@ if (!$isEngineOrPartNumberAnIdQueri) {
                         $q->whereNull('number')->orWhere('number', '');
                     });
                 }
-                
+
                 $partNumberAdverts = $partNumberAdverts->concat($query->limit(100)->get());
             }
-        
+
             // 5. Фильтрация по названию
             $partNumberAdverts = $this->filterByProductName($partNumberAdverts, $mainWord, $synonyms);
-            
+
             // 6. Удаление дубликатов и объединение результатов
             $partNumberAdvertIds = $partNumberAdverts->pluck('id')->toArray();
-            
+
             $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->reject(function($advert) use ($partNumberAdvertIds) {
                 return in_array($advert->id, $partNumberAdvertIds);
             });
-            
+
             $allAdverts = $allAdverts->concat($partNumberAdverts)->unique('id');
         }
 
@@ -985,7 +990,7 @@ if (!$isEngineOrPartNumberAnIdQueri) {
         $query = $this->applyBrandModelYearFilter($query, $brand, $model, $year);
         $allAdverts = $query->limit(5000)->get();
          Log::info('Поиск 1 закончен:');
-         
+
 $partNeed = null; // Инициализируем переменную
 
 if ($partIdFromPartsList) {
@@ -1048,7 +1053,7 @@ foreach ($baseAvtoMatches as $baseAvtoMatch) {
             })
             ->limit(10000);
     }
-    
+
     $exactMatchedAdverts = $exactMatchedAdvertsQuery->get();
 
     // Добавляем точные совпадения в коллекцию $exactMatchAdverts
@@ -1062,7 +1067,7 @@ foreach ($baseAvtoMatches as $baseAvtoMatch) {
         ->where('year', '!=', $year) // Исключаем точные совпадения по году
         ->where('product_name', 'like', '%' . $mainWord . '%') // Фильтруем по главному слову
         ->limit(1000); // Добавлен лимит в 50 записей
-        
+
       // Ищем остальные совпадения по синонимам
        if ($matchedAdvertsQuery->count() === 0) {
             $matchedAdvertsQuery = Advert::where('brand', $baseAvtoMatch->brand)
@@ -1077,7 +1082,7 @@ foreach ($baseAvtoMatches as $baseAvtoMatch) {
                 })
                 ->limit(1000);
         }
-        
+
     $matchedAdverts = $matchedAdvertsQuery->get();
 
     // Добавляем остальные совпадения в коллекцию $engineOrNumberMatchAdverts
@@ -1102,11 +1107,11 @@ if ($brand && $model && $year){
 
         if ($part) {
             $partIdFromPartsList = $part->part_id;
-           
+
         } else {
             $partIdFromPartsList = null;
         }
-        
+
          $year = (int) $year;
         $baseAvtoMatches = BaseAvto::where('brand', $brand)
             ->where('model', $model)
@@ -1135,8 +1140,8 @@ $allAdverts = $this->filterByProductName($allAdverts, $mainWord, $synonyms);
     $engineOrNumberMatchAdverts = $this->filterByProductName($engineOrNumberMatchAdverts,$mainWord, $synonyms);
     $exactMatchAdverts = $this->filterByProductName($exactMatchAdverts,$mainWord, $synonyms);
     $allAdverts = $this->filterByProductName($allAdverts, $mainWord, $synonyms);
-    
-    
+
+
 if ($brand && $model && $year && !empty($selectedModifications)) {
      Log::info('Начало поиска по всем значениям:');
     $cacheKey = md5(serialize([$brand, $model, $year, $selectedModifications, $searchQuery])); // Ключ кэша, включающий все параметры поиска
@@ -1207,7 +1212,7 @@ if ($brand && $model && $year && !empty($selectedModifications)) {
         'idModifications' => $idModifications,
         'idQueriList' => $idQueriList,
     ];
-    
+
     Cache::put($cacheKey, $cacheData, 60 * 10); // Кэшируем на 10 минут
     Log::info('Данные сохранены в кэш для ключа: ' . $cacheKey, [
         'cache_ttl' => '10 минут',
@@ -1218,7 +1223,7 @@ if ($brand && $model && $year && !empty($selectedModifications)) {
         ]
     ]);
 }
-  
+
 
     $engines = BaseAvto::whereIn('id_modification', $idModifications)->pluck('engine')->toArray();
 
@@ -1235,8 +1240,8 @@ if ($brand && $model && $year && !empty($selectedModifications)) {
             $allEngineNumbers[] = $baseAvtoMatch->engine;
         }
     }
-    
-   
+
+
 
   $partNumbers = UserQuery::whereIn('id_queri', $idQueriList)
     ->pluck('part_number')
@@ -1485,7 +1490,7 @@ $partNumbers = array_filter($partNumbers, function ($value) {
 
         }
     }
-    
+
 
 
 $allAdverts = collect();
@@ -1593,7 +1598,7 @@ $allAdverts = $allAdverts->sortByDesc('is_compatible')
         ->sortByDesc('relevance')
         ->sortBy('sort_order')
         ->values();
-        
+
         $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->map(function ($advert) use ($mainWord, $searchQueryLower, $synonyms) {
     $advertNameLower = mb_strtolower($advert->product_name, 'UTF-8');
     $mainWordLower = mb_strtolower($mainWord, 'UTF-8');
@@ -1644,10 +1649,21 @@ $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->sortByDesc('is_compat
 
 
     // Параметры пагинации
-    $perPage = 10;
+    $perPage = 4;
     $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
 
+
+
     // 1. Определяем начальные размеры коллекций
+
+    $sellerCode = '';
+    if ($seller) {
+        $exactMatchAdverts = $exactMatchAdverts->where('user_id', $seller->id)->values();
+        $engineOrNumberMatchAdverts = $engineOrNumberMatchAdverts->where('user_id', $seller->id)->values();
+        $allAdverts = $allAdverts->where('user_id', $seller->id)->values();
+        $sellerCode = Str::slug($seller->username);
+    }
+
     $exactCount = $exactMatchAdverts->count();
     $engineCount = $engineOrNumberMatchAdverts->count();
 
@@ -1743,6 +1759,7 @@ session([
     'image_prod' => $image_prod,
     'advert_ids' => $advert_ids
 ]);
+    # return count($allAdverts);
     return response()->view('adverts.search', compact(
         'allAdverts', //  Остается для фильтров, не для основного отображения
         'searchQuery',
@@ -1757,7 +1774,10 @@ session([
         'exactMatchAdvertsPaginated',
         'engineMatchAdvertsPaginated',
         'similarAdvertsPaginated',
-        'paginatedAdverts' // Используйте этот пагинатор во view
+        'paginatedAdverts',
+        'selectedModificationsSave',
+        'seller',
+        'sellerCode',
     ))->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');
@@ -1767,7 +1787,7 @@ session([
 protected function getAllAdvertsFromIdQueriList(array $idQueriList, string $mainWord, array $synonyms, string $brand = null, string $model = null, $partIdFromPartsList = null): Collection
 {
     $allAdverts = collect();
-    
+
      // Поиск по part_id
     if ($partIdFromPartsList !== null) {
         $partsListRecord = Part::where('part_id', $partIdFromPartsList)->first();
@@ -1810,7 +1830,7 @@ protected function getAllAdvertsFromIdQueriList(array $idQueriList, string $main
     } else {
         Log::info('partIdFromPartsList is null, пропуск поиска по PartsList.');
     }
-    
+
     // Добавляем поиск по brand и model в начале функции, если они переданы
     if ($brand && $model) {
         $brandModelAdverts = Advert::where('brand', $brand)
@@ -1999,9 +2019,16 @@ private function applyBrandModelYearFilter($query, $brand, $model, $year)
 
 
 
-    
+
 public function filterByEngine(Request $request)
 {
+    // middleware
+    $seller = $request->get('seller');
+    $sellerCode = '';
+    if ($seller) {
+        $sellerCode = Str::slug($seller->username);
+    }
+
     // Получаем все исходные коллекции из сессии
     $exactMatchAdverts = session('exactMatchAdverts', collect());
     $engineOrNumberMatchAdverts = session('engineOrNumberMatchAdverts', collect());
@@ -2040,7 +2067,7 @@ public function filterByEngine(Request $request)
         ->values();
 
     // Параметры пагинации
-    $perPage = 10;
+    $perPage = 8;
     $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
 
     // Определяем размеры отфильтрованных коллекций
@@ -2122,7 +2149,9 @@ public function filterByEngine(Request $request)
         'exactMatchAdvertsPaginated',
         'engineMatchAdvertsPaginated',
         'similarAdvertsPaginated',
-        'paginatedAdverts'
+        'paginatedAdverts',
+        'seller',
+        'sellerCode',
     ));
 }
 }
