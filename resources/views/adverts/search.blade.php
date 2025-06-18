@@ -24,7 +24,11 @@
     <title>@if ($seller) Поиск {{ $seller['username'] }} | Магазин @else Все товары  @endif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    @if (isset($individualPage))
+    <link rel="shortcut icon" href="{{ $seller->logo_url }}" type="image/x-icon">
+    @else
     <link rel="shortcut icon" href="{{asset('images/Group 438.png')}}" type="image/x-icon">
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
@@ -155,12 +159,14 @@
 </head>
 <body class="flex flex-col items-center ">
 <!-- Шапка -->
-@include('components.header-seller')
+@include('components.header-seller', ['user' => $seller])
 
 <!-- Карта -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
 
-@if ($seller)
+@if ($seller && $individualPage)
+    @include('components.seller-individual-info-block', ['user' => $seller, 'not_index' => true])
+@elseif ($seller)
     @include('components.seller-info-block', ['user' => $seller])
 @else
     <div id="map" class="w-full h-64 md:h-96 hidden sm:block"></div>
@@ -168,7 +174,7 @@
 
 <!-- Поисковая форма -->
 <div class="w-full mt-20 md:w-3/4 mt-10 mx-auto sm:block">
-    @include('components.search-form', ['user' => $seller, 'usernameCode' => $sellerCode])
+    @include('components.search-form', ['user' => $seller, 'usernameCode' => $sellerCode, 'individualPage' => $individualPage])
 </div>
 
 {{--<div class="blockadvert filters bg-white mt-4 w-full hidden md:w-3/4 p-4 rounded-lg shadow-md sm:block md:block 2xl:hidden">--}}
@@ -318,7 +324,9 @@
 
         <form method="GET" class="blockadvert p-2 rounded-lg shadow-md flex flex-col max-sm:hidden"
               action="
-                    @if ($seller && $sellerCode)
+                    @if (isset($individualPage))
+                        {{ route('adverts.filterByEngine') }}
+                    @elseif ($seller && $sellerCode)
                         {{ route('seller.filterByEngine', ['id' => $seller->id, 'username' => $sellerCode]) }}
                     @else
                         {{ route('adverts.filterByEngine') }}

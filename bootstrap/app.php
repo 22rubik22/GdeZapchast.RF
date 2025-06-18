@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
            'check.seller' => \App\Http\Middleware\CheckSeller::class,
+           'check.seller.page' => \App\Http\Middleware\CheckSellerPage::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

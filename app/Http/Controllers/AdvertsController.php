@@ -97,6 +97,20 @@ class AdvertsController extends Controller
     // страница объявления
 public function show(Request $request, $id, $product_name_slug, $brand = null, $model = null, $year = null, $engine = null, $number = null)
 {
+    // middleware
+    $seller = $request->get('seller');
+    $individualPage = $request->get('individualPage');
+    $host = $request->getHost(); // u123.gdezapchast.rf.test
+    $subdomain = explode('.', $host)[0]; // u123
+
+    if (preg_match('/^u(\d+)$/', $subdomain, $matches)) {
+        $userId = (int) $matches[1];
+        $seller = User::with(['legalInfo', 'branches', 'userAddress', 'userPhoneNumber'])
+            ->where('user_status', 1)
+            ->find($userId);
+        $individualPage = true;
+    }
+
     $advert = Advert::findOrFail($id);
 
     // Получаем параметры, приоритет отдается параметрам запроса (query parameters)
@@ -156,7 +170,8 @@ public function show(Request $request, $id, $product_name_slug, $brand = null, $
     // Передать товар, найденную деталь, модификацию и запросы в представление
     return view('adverts.show', compact(
         'advert', 'foundPartId', 'foundPartName', 'modificationId', 'adverts',
-        'branchAddress', 'product_name', 'main_photo_url', 'address_line', 'isFavorite', 'brand', 'model', 'year', 'product_name_slug', 'engine', 'number'
+        'branchAddress', 'product_name', 'main_photo_url', 'address_line', 'isFavorite', 'brand', 'model', 'year', 'product_name_slug', 'engine', 'number',
+        'seller', 'individualPage',
     ));
 }
 
@@ -437,6 +452,7 @@ public function search(Request $request)
 {
     // middleware
     $seller = $request->get('seller');
+    $individualPage = $request->get('individualPage');
 
     // Получаем данные из запроса
     $searchQuery = $request->input('search_query');
@@ -1778,11 +1794,11 @@ session([
         'selectedModificationsSave',
         'seller',
         'sellerCode',
+        'individualPage',
     ))->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');
 }
-
 
 protected function getAllAdvertsFromIdQueriList(array $idQueriList, string $mainWord, array $synonyms, string $brand = null, string $model = null, $partIdFromPartsList = null): Collection
 {
@@ -2024,6 +2040,7 @@ public function filterByEngine(Request $request)
 {
     // middleware
     $seller = $request->get('seller');
+    $individualPage = $request->get('individualPage');
     $sellerCode = '';
     if ($seller) {
         $sellerCode = Str::slug($seller->username);
@@ -2152,6 +2169,7 @@ public function filterByEngine(Request $request)
         'paginatedAdverts',
         'seller',
         'sellerCode',
+        'individualPage',
     ));
 }
 }

@@ -63,9 +63,11 @@
             const id   = encodeURIComponent(params.get('sellerId'));
             const code = encodeURIComponent(params.get('sellerCode'));
 
-            routeUrl = sellerRouteTemplate
-                .replace(':sellerId', id)
-                .replace(':sellerCode', code);
+            if (!params.has('individualPage')) {
+                routeUrl = sellerRouteTemplate
+                    .replace(':sellerId', id)
+                    .replace(':sellerCode', code);
+            }
         }
         form.action = routeUrl + (qs ? '?' + qs : '');
 

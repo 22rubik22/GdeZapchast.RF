@@ -597,9 +597,11 @@
                             <label for="shop_about" class="block mb-2 font-medium">Расскажите о своем магазине</label>
                             <textarea id="shop_about"
                                       name="about_shop"
-                                      rows="4"
+                                      rows="15"
                                       class="w-full border border-gray-300 rounded-lg p-3 focus:ring-blue-500"
                                       placeholder="Расскажите о своем магазине">{{ old('about_shop', $user->sellerInfo->about_shop ?? '') }}</textarea>
+                            <label for="banner" class="block mb-2 font-medium">URL баннера</label>
+                            <input type="text" id="banner" name="banner_url" value="{{ old('banner_url', $user->sellerInfo->banner_url ?? '') }}" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-blue-500">
                         </div>
 
                         {{-- Кнопки --}}
@@ -635,6 +637,16 @@
                 <p class="mb-2">Как выбрать название магазина</p>
                 <p>Как добавить дополнительный телефон</p>
             </div>
+            @php
+                $baseDomain = parse_url(config('app.url'), PHP_URL_HOST);
+                $shopUrl = 'https://u' . $user->id . '.' . $baseDomain;
+            @endphp
+            @if ($user->user_status == 1)
+            <div class="text-sm text-gray-600 mt-10">
+                <p class="mb-2">Ссылка на магазин</p>
+                <a href="{{$shopUrl}}">{{ $shopUrl }}</a>
+            </div>
+            @endif
         </div>
     </div>
 </div>

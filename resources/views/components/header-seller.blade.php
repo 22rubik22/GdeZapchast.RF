@@ -206,8 +206,8 @@ select#city-mobile:hover {
 <div class="header bg-white text-center w-full">
     <div class="logo float-left pt-5 block px-4 pd-0 md:p-5">
         <a href="{{ \App\Helpers\UrlHelper::generateUrlWithCity('home', null, request()->get('city')) }}" class="text-2xl text-blue-500 ignore-active">
-            @if(auth()->check() && auth()->user()->user_status == 1 && auth()->user()->logo_url)
-                <img src="{{ auth()->user()->logo_url }}" alt="Логотип" class="logourl w-3/4 h-16 mt-[-3rem]">
+            @if (isset($individualPage))
+                <img src="{{ $user->logo_url }}" alt="{{ $user->username }}" class="logourl h-16 max-w-[150px] object-contain mx-auto">
             @else
                 <strong class="text-3xl">Где</strong><strong class="text-3xl text-black">Запчасть</strong><strong class="text-3xl">.</strong><strong class="text-3xl text-black"><span>рф</span></strong>
             @endif

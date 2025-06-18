@@ -2,7 +2,13 @@
 
 
 @push('head')
+    @if ($individualPage)
+    <title>{{$user['username']}}</title>
+    @else
     <title>{{$user['username']}} | Магазин</title>
+    <link rel="shortcut icon" href="{{asset('images/Group 438.png')}}" type="image/x-icon">
+    @endif
+
 @endpush
 
 @section('pre-body')
@@ -115,17 +121,18 @@
 @endsection
 
 @section('content')
-    <script>
-        const user = @json($user);
-    </script>
 
-    @include('components.header-seller')
+    @include('components.header-seller', ['user' => $user, 'individualPage' => $individualPage])
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
 
-    @include('components.seller-info-block')
+    @if ($individualPage)
+        @include('components.seller-individual-info-block')
+    @else
+        @include('components.seller-info-block')
+    @endif
 
     <div class="w-full mt-20 md:w-[90%] mt-10 mx-auto sm:block">
-        @include('components.search-form')
+        @include('components.search-form', ['individualPage' => $individualPage])
     </div>
 
     <div id="search-filters-wrapper"  class="w-full md:w-[90%] flex flex-col items-start">

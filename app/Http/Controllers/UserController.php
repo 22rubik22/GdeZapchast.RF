@@ -213,7 +213,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $rules = [
-            'about_shop'             => 'nullable|string',
+            'about_shop' => 'nullable|string',
+            'banner_url' => 'nullable|string',
         ];
 
         $data = $request->validate($rules);
@@ -222,6 +223,7 @@ class UserController extends Controller
             ['user_id' => $user->id],
             [
                 'about_shop'             => $data['about_shop']              ?? null,
+                'banner_url'             => $data['banner_url']              ?? null,
             ]
         );
 

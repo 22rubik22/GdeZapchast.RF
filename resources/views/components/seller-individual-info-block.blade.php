@@ -1,27 +1,7 @@
-<div class="w-full mt-20 md:w-[90%] mt-10 mx-auto sm:block">
-    <div class="flex flex-col md:flex-row justify-between w-full max-w-6xl mx-auto gap-y-10">
-        <div class="flex gap-x-20 gap-y-10 max-sm:flex-col px-[20px] max-md:flex-row-reverse">
-            <div class="shrink md:w-auto flex justify-center md:justify-start">
-                <div class="w-44 h-44 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-                    @if(!empty($user->avatar_url))
-                        <img src="{{ $user->avatar_url }}" alt="Аватар пользователя" class="w-full h-full object-contain ">
-                    @else
-                        <i class="fas fa-user text-8xl text-gray-400"></i>
-                    @endif
-                </div>
-            </div>
-
-            <div class="w-2/3 md:w-auto flex-grow">
-                <h1 class="text-3xl font-bold mb-4">{{ $user->username }}</h1>
-                <p class="text-gray-600 mb-2">Город: <span class="text-black">{{ $user->city }}</span></p>
-                <p class="text-gray-600 mb-2">Адрес: <span class="text-black">{{ $user->userAddress->address_line }}</span></p>
-                <p class="text-gray-600 mb-2">Телефон: <span class="text-black"><a href="tel:{{ $user->userPhoneNumber->number_1 }}">{{ $user->userPhoneNumber->number_1 }}</a></span></p>
-                <p class="text-gray-600 mb-2">Email: <span class="text-black"><a href="mailto:{{ $user->email }}">{{ $user->email }}</a></span></p>
-            </div>
-        </div>
-
-        <div class="inline-flex flex-col items-stretch gap-4 w-fit max-md:px-[20px]">
-            @php
+<div class="w-full mt-20 md:mt-0 md:w-[90%] mt-10 mx-auto sm:block">
+    <div class="flex flex-col-reverse md:flex-row justify-between w-full max-w-6xl mx-auto gap-y-10 ">
+        <div class="inline-flex flex-col md:flex-row items-start md:items-center gap-4 w-fit max-md:px-[20px]">
+        @php
                 $btns = [
                     'about' => ['name' => 'О компании', 'popup' => 'modalSellerAbout'],
                     'contacts' => ['name' => 'Контакты', 'popup' => ''],
@@ -39,15 +19,33 @@
             @endforeach
         </div>
 
+        <div class="flex gap-x-20 gap-y-10 max-sm:flex-col px-[20px] max-md:flex-row-reverse">
+            <div class="shrink md:w-auto flex justify-center md:justify-start md:hidden">
+                <div class="w-44 h-44 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+                    @if($user->avatar_url)
+                        <img src="{{ $user->avatar_url }}" alt="Аватар пользователя" class="w-full h-full object-contain ">
+                    @else
+                        <i class="fas fa-user text-8xl text-gray-400"></i>
+                    @endif
+                </div>
+            </div>
+
+            <div class="w-2/3 md:w-auto flex-grow">
+                <h1 class="text-3xl font-bold mb-4 md:hidden">{{ $user->username }}</h1>
+                <p class="text-gray-600 mb-2 md:hidden">Город: <span class="text-black">{{ $user->city }}</span></p>
+                <p class="text-gray-600 mb-2">Адрес: <span class="text-black">{{ $user->userAddress->address_line }}</span></p>
+                <p class="text-gray-600 mb-2">Телефон: <span class="text-black"><a href="tel:{{ $user->userPhoneNumber->number_1 }}">{{ $user->userPhoneNumber->number_1 }}</a></span></p>
+                <p class="text-gray-600 mb-2 md:hidden">Email: <span class="text-black"><a href="mailto:{{ $user->email }}">{{ $user->email }}</a></span></p>
+            </div>
+        </div>
+
         <div id="modalSellerAbout"
              class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden js_popup_container">
             <div class="bg-white rounded-lg p-6 w-4/5 max-w-none relative overflow-y-auto max-h-[90vh]">
                 <button id="closeSellerAbout" class="absolute top-3 right-3 text-2xl js_close_popup">&times;</button>
                 <h2 class="text-2xl font-bold mb-6 text-center">О Магазине</h2>
                 <div>
-                    @if ($user->sellerInfo)
-                        {!! nl2br(e($user->sellerInfo->about_shop)) !!}
-                    @endif
+                {!! nl2br(e($user->sellerInfo->about_shop)) !!}
                 </div>
             </div>
         </div>
@@ -57,7 +55,6 @@
             <div class="bg-white rounded-lg p-6 w-4/5 max-w-none relative overflow-y-auto max-h-[90vh]">
                 <button id="closeSellerAbout" class="absolute top-3 right-3 text-2xl js_close_popup">&times;</button>
                 <h2 class="text-2xl font-bold text-center">Доставка и оплата</h2>
-                @if ($user->sellerInfo)
                 <div>
                     <h3 class="text-xl font-bold my-6 text-left">Условия гарантии и возврата</h3>
                     {!! nl2br(e($user->sellerInfo->warranty_return_policy)) !!}
@@ -118,7 +115,6 @@
                     <h3 class="text-xl font-bold my-6 text-left">Дополнительные условия доставки</h3>
                     {!! nl2br(e($user->sellerInfo->additional_delivery_conditions)) !!}
                 </div>
-                @endif
             </div>
         </div>
 
@@ -142,14 +138,26 @@
                     });
                 });
             })
-
-            // открыть/закрыть
-            // document.getElementById('about').onclick = () => {
-            //     document.getElementById('modalSellerAbout').classList.remove('hidden');
-            // };
-            // document.getElementById('closeSellerAbout').onclick = () => {
-            //         document.getElementById('modalSellerAbout').classList.add('hidden');
-            // };
         </script>
     </div>
 </div>
+
+@if ($user->sellerInfo->banner_url && !isset($not_index))
+    <style>
+        div.banner {
+            padding: 9px 6px 9px 6px;
+            background-color: #E9510E;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 112%;
+            text-align: center;
+            position: absolute;
+            left: 40%;
+            bottom: 30px;
+            width: 20%;
+        }
+    </style>
+    <div class="w-full md:w-[90%] mx-auto mt-10 hidden md:block">
+        <img src="{{ $user->sellerInfo->banner_url }}" alt="" class="banner w-full rounded-2xl hidden md:block">
+    </div>
+@endif

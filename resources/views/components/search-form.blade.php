@@ -592,9 +592,14 @@
 
             // Получаем данные формы
             let formData = $('#main-form').serialize();
-            @if(!empty($user) && !empty($usernameCode))
-                formData += '&sellerId='   + encodeURIComponent('{{ $user->id }}');
-                formData += '&sellerCode=' + encodeURIComponent('{{ $usernameCode }}');
+            @if(!empty($user))
+                @if (!empty($usernameCode))
+                    formData += '&sellerId='   + encodeURIComponent('{{ $user->id }}');
+                    formData += '&sellerCode=' + encodeURIComponent('{{ $usernameCode }}');
+                @endif
+                @if (isset($individualPage))
+                    formData += '&individualPage=' + encodeURIComponent('1');
+                @endif
             @endif
 
             // Перенаправляем на страницу загрузки

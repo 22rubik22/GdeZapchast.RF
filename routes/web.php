@@ -26,7 +26,25 @@ use App\Http\Controllers\AdvertTableController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\SellerControler;
 use Spatie\Sitemap\SitemapGenerator;
+use Illuminate\Support\Facades\Log;
 
+
+Route::domain('u{id}.gdezapchast.rf.test')->group(function () {
+    Route::middleware('check.seller.page')->group(function () {
+        Route::get('/', [SellerControler::class, 'index'])->name('individual.seller.index');
+        Route::match(['get', 'post'], '/search', [AdvertsController::class, 'search'])->name('seller.search');
+        Route::get('/adverts/filter-by-engine', [AdvertsController::class, 'filterByEngine'])->name('seller.filterByEngine');
+
+        //Route::get('/adverts/{id}/{product_name_slug?}', [AdvertsController::class, 'show'])->name('seller.advert.show');
+        //Route::resource('adverts', AdvertsController::class)->except(['show']);
+    });
+});
+
+//Route::middleware('check.seller')->group(function () {
+//    Route::get('/shop/{id}/{username}', [SellerControler::class, 'index'])->name('seller.index');
+//    Route::match(['get', 'post'], '/shop/{id}/{username}/search', [AdvertsController::class, 'search'])->name('seller.search');
+//    Route::get('/shop/{id}/{username}/adverts/filter-by-engine', [AdvertsController::class, 'filterByEngine'])->name('seller.filterByEngine');
+//});
 
 Route::get('/users/{userId}/branches', [UserController::class, 'getBranches'])->name('user.branches');
 Route::delete('/branches/{id}', [UserController::class, 'deleteBranch'])->name('branch.delete');

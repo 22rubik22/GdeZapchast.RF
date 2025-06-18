@@ -27,12 +27,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=9fbfa4df-7869-44a3-ae8e-0ebc49545ea9" type="text/javascript"></script>
-    <link rel="shortcut icon" href="{{asset('images/Group 438.png')}}" type="image/x-icon">
+    @if (isset($individualPage) && isset($seller))
+        <link rel="shortcut icon" href="{{ $seller->logo_url }}" type="image/x-icon">
+    @else
+        <link rel="shortcut icon" href="{{asset('images/Group 438.png')}}" type="image/x-icon">
+    @endif
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
 
     <style>
-    
+
 #brand-filters, #model-filters {
     display: flex;
     flex-wrap: wrap; /* Перенос элементов на следующую строку */
@@ -92,7 +96,7 @@ body {
     border: 1px solid #007bff; /* Граница кнопок */
     border-radius: 10px; /* Скругляем углы */
     text-decoration: none; /* Убираем подчеркивание */
- 
+
     font-size: 14px; /* Уменьшаем размер шрифта */
     cursor: pointer; /* Курсор в виде указателя */
 }
@@ -201,7 +205,8 @@ body {
     </style>
 </head>
 <body class="text-gray-800">
-    @include('components.header-seller')
+
+    @include('components.header-seller', ['user' => isset($seller) ? $seller : []])
 
   <!-- путь -->
 <div class="container_path px-4 py-2 text-gray-600 font-medium">
@@ -215,7 +220,7 @@ body {
     <div class="container mx-auto">
         <h1 class="text-3xl font-semibold mb-4">{{ $advert->product_name }}</h1>
      <div class="flex flex-col lg:flex-row">
-    <div class="lg:w-2/3"> 
+    <div class="lg:w-2/3">
         <div class="rounded-lg mb-4 ">
             @if ($advert->main_photo_url)
              <div class="photo-container rounded-lg shadow-lg">
@@ -281,16 +286,24 @@ body {
                         </div>
                         <a class="text-blue-500 text-base mt-1 block" href="#">Показать условия доставки</a>
                     </div>
-                    <div class="mt-4 flex justify-between items-start">
+                    @php
+                        use Illuminate\Support\Str;
+                        $shopUrl = url('/shop/' . $advert->user->id . '/' . Str::slug($advert->user->username));
+                        if (isset($individualPage)) {
+                            $shopUrl = '/';
+                        }
+                    @endphp
+                    <a class="mt-4 flex justify-between items-start" href="{{ $shopUrl }}">
                         <div>
                             <p class="font-semibold text-lg">{{ $advert->user->username }}</p>
                             <p class="text-gray-500 text-base">{{ $advert->user->userAddress->address_line ?? 'Не указан' }}</p>
-                            <a class="text-blue-500 text-base mt-1 block" href="#yamap">показать на карте</a>
+
                         </div>
                         <div class="flex justify-center">
                            <img alt="Логотип {{ $advert->user->username }}" class="w-24 h-24 rounded-full mr-4 object-cover" src="{{ $advert->user->avatar_url ?? asset('images/noava.jpg') }}"/>
                         </div>
-                    </div>
+                    </a>
+                    <a class="text-blue-500 text-base block" href="#yamap">показать на карте</a>
                     <div class="mt-6 hidden md:block">
                         <button id="show-phone-btn-desktop" class="w-full bg-blue-500 text-white py-2 rounded-lg text-lg">Показать телефон</button>
                        <button class="w-full bg-green-500 text-white py-2 rounded-lg text-lg mt-2">
@@ -314,7 +327,7 @@ body {
             <h1 class="text-xl font-semibold mb-4">
                 Продавец
             </h1>
-            <div class="flex items-center">
+            <a class="flex items-center" href="{{ $shopUrl }}">
                 <img alt="Логотип {{ $advert->user->username }}" class="w-24 h-24 rounded-full mr-4 object-cover" src="{{ $advert->user->avatar_url ?? asset('images/noava.jpg') }}"/>
                 <div>
                     <h2 class="text-lg font-semibold">
@@ -327,12 +340,13 @@ body {
                         <span id="phone-number" class="text-base font-semibold bg-orange-100 px-2 py-1 rounded">
                             {{ $advert->user->UserPhoneNumber->number_1 }}
                         </span>
-                        <a class="text-base text-blue-500 " href="#yamap">
-                            показать на карте
-                        </a>
+
                     </div>
                 </div>
-            </div>
+            </a>
+            <a class="text-base text-blue-500 " href="#yamap">
+                показать на карте
+            </a>
         </div>
         <div class=" p-4 mt-8">
             <h2 class="text-2xl font-semibold mb-4">Характеристики</h2>
@@ -399,7 +413,7 @@ body {
         Нет данных о применимости
     </div>
 </div>
-        
+
 
         <div class="p-4 mt-8">
             <h2 class="text-2xl font-semibold mb-4">Доставка и оплата</h2>
@@ -444,7 +458,7 @@ body {
             <div id="map" class="w-full h-96 mt-4 mb-12"></div>
         </div>
     </div>
- @include('components.footer')   
+ @include('components.footer')
 
     <!-- Фиксированные кнопки на мобильных устройствах -->
     <div class="fixed-buttons bottom-14 md:hidden flex space-x-2 z-10">
@@ -510,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function init() {
             var myMap = new ymaps.Map('map', {
                 center: [52.753994, 104.622093],
-                zoom: 9, 
+                zoom: 9,
                 controls: ['zoomControl']
             });
 
@@ -603,7 +617,7 @@ document.querySelectorAll('.favorite-btn').forEach(button => {
                 if (data.message) {
                     icon.classList.remove('fas');
                     icon.classList.add('far');
-                   
+
                 }
             });
         } else {
@@ -620,7 +634,7 @@ document.querySelectorAll('.favorite-btn').forEach(button => {
                 if (data.message) {
                     icon.classList.remove('far');
                     icon.classList.add('fas');
-                   
+
                 }
             });
         }
@@ -665,12 +679,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 tableBody.innerHTML = '';
-                
+
                 if (data.adverts && data.adverts.length > 0) {
                     // Показываем контейнер с данными
                     compatibilityContainer.style.display = 'block';
                     noDataMessage.style.display = 'none';
-                    
+
                     data.adverts.forEach(car => {
                         const row = document.createElement('tr');
                         row.className = 'border-b';
@@ -809,8 +823,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const firstPageButton = document.createElement('button');
                 firstPageButton.textContent = '1';
                 firstPageButton.className = `px-4 py-2 mx-1 rounded border ${
-                    1 === currentPage 
-                        ? 'bg-blue-600 text-white border-blue-600' 
+                    1 === currentPage
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-blue-600 border-gray-300 hover:bg-gray-100'
                 }`;
                 firstPageButton.addEventListener('click', () => {
@@ -835,8 +849,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
                 pageButton.className = `px-4 py-2 mx-1 rounded border ${
-                    i === currentPage 
-                        ? 'bg-blue-600 text-white border-blue-600' 
+                    i === currentPage
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-blue-600 border-gray-300 hover:bg-gray-100'
                 }`;
                 pageButton.addEventListener('click', () => {
@@ -858,8 +872,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const lastPageButton = document.createElement('button');
                 lastPageButton.textContent = pagination.last_page;
                 lastPageButton.className = `px-4 py-2 mx-1 rounded border ${
-                    pagination.last_page === currentPage 
-                        ? 'bg-blue-600 text-white border-blue-600' 
+                    pagination.last_page === currentPage
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-blue-600 border-gray-300 hover:bg-gray-100'
                 }`;
                 lastPageButton.addEventListener('click', () => {

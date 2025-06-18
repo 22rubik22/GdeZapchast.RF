@@ -13,6 +13,7 @@ class SellerControler extends Controller
     {
         // middleware
         $user = $request->get('seller');
+        $individualPage = $request->get('individualPage');
 
         $id = $user->id;
 
@@ -42,7 +43,8 @@ class SellerControler extends Controller
                 'adverts',
                 'id',
                 'user',
-                'usernameCode'
+                'usernameCode',
+                'individualPage',
             )
         );
     }
